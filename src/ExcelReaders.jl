@@ -4,13 +4,20 @@ import Base.show
 
 export openxl, readxl
 
-using PyCall, DataArrays, DataFrames
+using PyCall, DataArrays, DataFrames, Dates
 
 @pyimport xlrd
 
 type ExcelFile
 	workbook::PyObject
 	filename::String
+end
+
+# TODO Remove this type once there is a Time type in Dates
+immutable Time
+	hours::Int
+	minutes::Int
+	seconds::Int
 end
 
 function show(io::IO, o::ExcelFile)
@@ -77,7 +84,12 @@ function readxl(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int
 				elseif celltype == xlrd.XL_CELL_NUMBER
 					data[row-startrow+1, col-startcol+1] = convert(Float64, cellval)
 				elseif celltype == xlrd.XL_CELL_DATE
-					error("Support for date cells not yet implemented")
+					date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd.xldate_as_tuple(cellval, wb[:datemode])
+					if date_month==0
+						data[row-startrow+1, col-startcol+1] = Time(date_hour, date_minute, date_sec)
+					else
+						data[row-startrow+1, col-startcol+1] = DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)	
+					end
 				elseif celltype == xlrd.XL_CELL_BOOLEAN
 					data[row-startrow+1, col-startcol+1] = convert(Bool, cellval)
 				elseif celltype == xlrd.XL_CELL_ERROR
