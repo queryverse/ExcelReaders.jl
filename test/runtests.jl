@@ -29,9 +29,8 @@ for f in [file, filename]
 	@test data[2,3] == true
 	@test isna(data[4,5])
 
-	# TODO Read in C3:J7 once a bug in DataArrays is fixed
-	df = readxl(DataFrame, f, "Sheet1!C3:G7")
-	@test ncol(df) == 5
+	df = readxl(DataFrame, f, "Sheet1!C3:J7")
+	@test ncol(df) == 8
 	@test nrow(df) == 4
 	@test isa(df[symbol("Some Float64s")], DataVector{Float64})
 	@test isa(df[symbol("Some Strings")], DataVector{UTF8String})
@@ -45,10 +44,15 @@ for f in [file, filename]
 	@test df[2,symbol("Mixed column")] == "EEEEE"
 	@test df[3,symbol("Mixed column")] == false
 	@test isna(df[3,symbol("Mixed with NA")])
+	@test df[1,symbol("Float64 with NA")] == 3.
+	@test isna(df[2,symbol("Float64 with NA")])
+	@test df[1,symbol("String with NA")] == "FF"
+	@test isna(df[2,symbol("String with NA")])
+	@test df[2,symbol("Bool with NA")] == true
+	@test isna(df[1,symbol("Bool with NA")])
 
-	# TODO Read in C3:J7 once a bug in DataArrays is fixed
-	df = readxl(DataFrame, f, "Sheet1!C4:G7", header=false)
-	@test ncol(df) == 5
+	df = readxl(DataFrame, f, "Sheet1!C4:J7", header=false)
+	@test ncol(df) == 8
 	@test nrow(df) == 4
 	@test isa(df[1], DataVector{Float64})
 	@test isa(df[2], DataVector{UTF8String})
@@ -62,10 +66,15 @@ for f in [file, filename]
 	@test df[2,4] == "EEEEE"
 	@test df[3,4] == false
 	@test isna(df[3,5])
+	@test df[1,6] == 3.
+	@test isna(df[2,6])
+	@test df[1,7] == "FF"
+	@test isna(df[2,7])
+	@test df[2,8] == true
+	@test isna(df[1,8])
 
-	# TODO Read in C3:J7 once a bug in DataArrays is fixed
-	df = readxl(DataFrame, f, "Sheet1!C4:G7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5])
-	@test ncol(df) == 5
+	df = readxl(DataFrame, f, "Sheet1!C4:J7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8])
+	@test ncol(df) == 8
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
@@ -79,10 +88,15 @@ for f in [file, filename]
 	@test df[2,:c4] == "EEEEE"
 	@test df[3,:c4] == false
 	@test isna(df[3,:c5])
+	@test df[1,:c6] == 3.
+	@test isna(df[2,:c6])
+	@test df[1,:c7] == "FF"
+	@test isna(df[2,:c7])
+	@test df[2,:c8] == true
+	@test isna(df[1,:c8])
 
-	# TODO Read in C3:J7 once a bug in DataArrays is fixed
-	df = readxl(DataFrame, f, "Sheet1!C3:G7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5])
-	@test ncol(df) == 5
+	df = readxl(DataFrame, f, "Sheet1!C3:J7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8])
+	@test ncol(df) == 8
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
@@ -96,7 +110,13 @@ for f in [file, filename]
 	@test df[2,:c4] == "EEEEE"
 	@test df[3,:c4] == false
 	@test isna(df[3,:c5])
+	@test df[1,:c6] == 3.
+	@test isna(df[2,:c6])
+	@test df[1,:c7] == "FF"
+	@test isna(df[2,:c7])
+	@test df[2,:c8] == true
+	@test isna(df[1,:c8])
 
 	# Too few colnames
-	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:G7", header=true, colnames=[:c1, :c2, :c3, :c4])
+	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:J7", header=true, colnames=[:c1, :c2, :c3, :c4])
 end

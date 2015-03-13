@@ -133,6 +133,7 @@ function readxl(::Type{DataFrame}, file::ExcelFile, sheetname::String, startrow:
 		all_one_type = true
 		found_first_type = false
 		type_of_el = Any
+		NAs_present = false
 		for val=values
 			if !found_first_type
 				if !isna(val)
@@ -141,12 +142,32 @@ function readxl(::Type{DataFrame}, file::ExcelFile, sheetname::String, startrow:
 				end
 			elseif !isna(val) && (typeof(val)!=type_of_el)
 				all_one_type = false
-				break
+				if NAs_present
+					break
+				end
+			end
+			if isna(val)
+				NAs_present = true
+				if all_one_type == false
+					break
+				end
 			end
 		end
 		
 		if all_one_type
-			columns[i] = convert(DataArray{type_of_el},values)
+			if NAs_present
+				# TODO use the following line instead of the shim once upstream
+				# bug is fixed
+				#columns[i] = convert(DataArray{type_of_el},values)
+				shim_newarray = DataArray(type_of_el, length(values))
+				for l=1:length(values)
+					shim_newarray[l] = values[l]
+				end
+				columns[i] = shim_newarray
+			else
+				# TODO Decide whether this should be converted to Array instead of DataArray
+				columns[i] = convert(DataArray{type_of_el},values)
+			end
 		else
 			columns[i] = values
 		end
