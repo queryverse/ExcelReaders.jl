@@ -60,4 +60,4 @@ df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4",
             header=false, colnames=[:name1, :name2, :name3])
 ````
 
-You can also combine ``header=false`` and a custom ``colnames`` list, in that case the first row in the specified range will just be skipped.
+You can also combine ``header=true`` and a custom ``colnames`` list, in that case the first row in the specified range will just be skipped.
