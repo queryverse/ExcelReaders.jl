@@ -23,8 +23,8 @@ for f in [file, filename]
 	@test_throws ErrorException readxl(f, "Sheet1!G2:B5")
 	@test_throws ErrorException readxl(f, "Sheet1!G5:B2")
 
-	data = readxl(f, "Sheet1!C3:L7")
-	@test size(data) == (5,10)
+	data = readxl(f, "Sheet1!C3:N7")
+	@test size(data) == (5,12)
 	@test data[4,1] == 2.0
 	@test data[2,2] == "A"
 	@test data[2,3] == true
@@ -35,9 +35,13 @@ for f in [file, filename]
 	@test data[5,9] == ExcelReaders.Time(15,2,0)
 	@test data[3,10] == DateTime(1950,8,9,18,40)
 	@test isna(data[5,10])
+	@test isa(data[2,11], ExcelErrorCell)
+	@test isa(data[3,11], ExcelErrorCell)
+	@test isa(data[4,12], ExcelErrorCell)
+	@test isna(data[5,12])
 
-	df = readxl(DataFrame, f, "Sheet1!C3:L7")
-	@test ncol(df) == 10
+	df = readxl(DataFrame, f, "Sheet1!C3:N7")
+	@test ncol(df) == 12
 	@test nrow(df) == 4
 	@test isa(df[symbol("Some Float64s")], DataVector{Float64})
 	@test isa(df[symbol("Some Strings")], DataVector{UTF8String})
@@ -63,10 +67,13 @@ for f in [file, filename]
 	@test df[2,symbol("Some dates")] == DateTime(2015,2,4,10,14)
 	@test df[4,symbol("Some dates")] == ExcelReaders.Time(15,2,0)
 	@test isna(df[4,symbol("Dates with NA")])
+	# TODO Add a test that checks the error code, not just type
+	@test isa(df[1,symbol("Some errors")], ExcelErrorCell)
+	@test isna(df[4,symbol("Errors with NA")])
 
 
-	df = readxl(DataFrame, f, "Sheet1!C4:L7", header=false)
-	@test ncol(df) == 10
+	df = readxl(DataFrame, f, "Sheet1!C4:N7", header=false)
+	@test ncol(df) == 12
 	@test nrow(df) == 4
 	@test isa(df[1], DataVector{Float64})
 	@test isa(df[2], DataVector{UTF8String})
@@ -92,9 +99,12 @@ for f in [file, filename]
 	@test df[2,9] == DateTime(2015,2,4,10,14)
 	@test df[4,9] == ExcelReaders.Time(15,2,0)
 	@test isna(df[4,10])
+	# TODO Add a test that checks the error code, not just type
+	@test isa(df[1,11], ExcelErrorCell)
+	@test isna(df[4,12])
 
-	df = readxl(DataFrame, f, "Sheet1!C4:L7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10])
-	@test ncol(df) == 10
+	df = readxl(DataFrame, f, "Sheet1!C4:N7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12])
+	@test ncol(df) == 12
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
@@ -120,9 +130,12 @@ for f in [file, filename]
 	@test df[2,:c9] == DateTime(2015,2,4,10,14)
 	@test df[4,:c9] == ExcelReaders.Time(15,2,0)
 	@test isna(df[4,:c10])
+	# TODO Add a test that checks the error code, not just type
+	@test isa(df[1,:c11], ExcelErrorCell)
+	@test isna(df[4,:c12])
 
-	df = readxl(DataFrame, f, "Sheet1!C3:L7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10])
-	@test ncol(df) == 10
+	df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12])
+	@test ncol(df) == 12
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
@@ -148,7 +161,9 @@ for f in [file, filename]
 	@test df[2,:c9] == DateTime(2015,2,4,10,14)
 	@test df[4,:c9] == ExcelReaders.Time(15,2,0)
 	@test isna(df[4,:c10])
+	@test isa(df[1,:c11], ExcelErrorCell)
+	@test isna(df[4,:c12])
 
 	# Too few colnames
-	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:L7", header=true, colnames=[:c1, :c2, :c3, :c4])
+	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4])
 end

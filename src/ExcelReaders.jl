@@ -2,7 +2,7 @@ module ExcelReaders
 
 import Base.show
 
-export openxl, readxl
+export openxl, readxl, ExcelErrorCell
 
 using PyCall, DataArrays, DataFrames, Dates
 
@@ -11,6 +11,10 @@ using PyCall, DataArrays, DataFrames, Dates
 type ExcelFile
 	workbook::PyObject
 	filename::String
+end
+
+type ExcelErrorCell
+	errorcode::Int
 end
 
 # TODO Remove this type once there is a Time type in Dates
@@ -22,6 +26,10 @@ end
 
 function show(io::IO, o::ExcelFile)
 	print(io, "ExcelFile <$(o.filename)>")
+end
+
+function show(io::IO, o::ExcelErrorCell)
+	print(io, xlrd.error_text_from_code[o.errorcode])
 end
 
 function openxl(filename::String)
@@ -93,7 +101,7 @@ function readxl(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int
 				elseif celltype == xlrd.XL_CELL_BOOLEAN
 					data[row-startrow+1, col-startcol+1] = convert(Bool, cellval)
 				elseif celltype == xlrd.XL_CELL_ERROR
-					error("Support for error cells not yet implemented")
+					data[row-startrow+1, col-startcol+1] = ExcelErrorCell(cellval)
 				else
 					error("Unknown cell type")
 				end
