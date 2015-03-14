@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/davidanthoff/ExcelReaders.jl.svg?branch=master)](https://travis-ci.org/davidanthoff/ExcelReaders.jl)
 [![Coverage Status](https://coveralls.io/repos/davidanthoff/ExcelReaders.jl/badge.svg)](https://coveralls.io/r/davidanthoff/ExcelReaders.jl)
 
-ExcelReaders is a beta package that provides functionality to read Excel files.
+ExcelReaders is a package that provides functionality to read Excel files.
 
 ## Installation
 
