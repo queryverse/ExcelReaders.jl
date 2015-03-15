@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/davidanthoff/ExcelReaders.jl.svg?branch=master)](https://travis-ci.org/davidanthoff/ExcelReaders.jl)
 [![Coverage Status](https://coveralls.io/repos/davidanthoff/ExcelReaders.jl/badge.svg)](https://coveralls.io/r/davidanthoff/ExcelReaders.jl)
+[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_release.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=release)
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
