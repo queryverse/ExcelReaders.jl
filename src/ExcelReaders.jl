@@ -74,10 +74,20 @@ function readxl(file::ExcelFile, range::String)
 	readxl(file, sheetname, startrow, startcol, endrow, endcol)
 end
 
+function readxl(filename::String, sheet_index::Int=0)
+	file = openxl(filename)
+	wb = file.workbook
+	ws = wb[:sheet_by_index](sheet_index)
+    readxl_data(ws)
+end
+
 function readxl(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
 	wb = file.workbook
 	ws = wb[:sheet_by_name](sheetname)
-
+    readxl_data(ws, startrow, startcol, endrow, endcol)
+end
+    
+function readxl_data(ws::PyObject, startrow::Int=0, startcol::Int=0, endrow::Int=ws[:nrows]-1, endcol::Int=ws[:ncols]-1)
 	data = DataArray(Any, endrow-startrow+1,endcol-startcol+1)
 
 	for row in startrow:endrow
