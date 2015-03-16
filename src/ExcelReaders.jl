@@ -71,10 +71,10 @@ end
 function readxl(file::ExcelFile, range::String)
 	sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
 
-	readxl(file, sheetname, startrow, startcol, endrow, endcol)
+	readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 end
 
-function readxl(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
+function readxl_internal(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
 	wb = file.workbook
 	ws = wb[:sheet_by_name](sheetname)
 
@@ -121,11 +121,11 @@ end
 function readxl(::Type{DataFrame}, file::ExcelFile, range::String; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
 	sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
 
-	readxl(DataFrame, file, sheetname, startrow, startcol, endrow, endcol, header=header, colnames=colnames)
+	readxl_internal(DataFrame, file, sheetname, startrow, startcol, endrow, endcol, header=header, colnames=colnames)
 end
 
-function readxl(::Type{DataFrame}, file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
-	data = readxl(file, sheetname, startrow, startcol, endrow, endcol)
+function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
+	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 
 	nrow, ncol = size(data)
 
