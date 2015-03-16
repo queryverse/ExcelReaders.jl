@@ -43,16 +43,16 @@ function colnum(col::String)
 	for c in cl
 		r = (r * 26) + (c - 'A' + 1)
 	end
-	return r-1
+	return r
 end
 
 function convert_ref_to_sheet_row_col(range::String)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
     m=match(r, range)
     sheetname=string(m.captures[1])
-    startrow=int(m.captures[3])-1
+    startrow=int(m.captures[3])
     startcol=colnum(m.captures[2])
-    endrow=int(m.captures[5])-1
+    endrow=int(m.captures[5])
     endcol=colnum(m.captures[4])
     if (startrow > endrow ) || (startcol>endcol)
 		error("Please provide rectangular region from top left to bottom right corner")
@@ -82,11 +82,11 @@ function readxl_internal(file::ExcelFile, sheetname::String, startrow::Int, star
 
 	for row in startrow:endrow
 		for col in startcol:endcol
-			cellval = ws[:cell_value](row,col)
+			cellval = ws[:cell_value](row-1,col-1)
 			if cellval == ""
 				data[row-startrow+1, col-startcol+1] = NA
 			else
-				celltype = ws[:cell_type](row,col)
+				celltype = ws[:cell_type](row-1,col-1)
 				if celltype == xlrd.XL_CELL_TEXT
 					data[row-startrow+1, col-startcol+1] = convert(String, cellval)
 				elseif celltype == xlrd.XL_CELL_NUMBER
