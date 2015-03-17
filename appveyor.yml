@@ -12,7 +12,7 @@ install:
   - ps: (new-object net.webclient).DownloadFile($("http://status.julialang.org/"+$env:JULIAVERSION), "C:\projects\julia-binary.exe")
 # Run installer silently, output to C:\projects\julia
   - C:\projects\julia-binary.exe /S /D=C:\projects\julia
-
+  - pip install xlrd
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
