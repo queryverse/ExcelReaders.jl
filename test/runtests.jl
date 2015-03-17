@@ -166,4 +166,103 @@ for f in [file, filename]
 
 	# Too few colnames
 	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4])
+
+	# Test readxlsheet function
+	for sheetinfo=["Second Sheet", 2]
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:nonsense)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblankrows=:nonsense)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblankcols=:nonsense)
+
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipblankrows=:start)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipblankcols=:all)
+
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipblankrows=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipblankcols=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, nrows=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, ncols=2)
+
+		data = readxlsheet(f, sheetinfo)
+		@test size(data) == (6, 6)
+		@test data[2,1] == 1.
+		@test data[5,2] == "CCC"
+		@test data[3,3] == false
+		@test data[6,6] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4,3])
+		@test isna(data[4,6])
+
+		data = readxlsheet(f, sheetinfo, skipblanks=:start)
+		@test size(data) == (6, 6)
+		@test data[2,1] == 1.
+		@test data[5,2] == "CCC"
+		@test data[3,3] == false
+		@test data[6,6] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4,3])
+		@test isna(data[4,6])
+
+		data = readxlsheet(f, sheetinfo, skipblankrows=:start, skipblankcols=:start)
+		@test size(data) == (6, 6)
+		@test data[2,1] == 1.
+		@test data[5,2] == "CCC"
+		@test data[3,3] == false
+		@test data[6,6] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4,3])
+		@test isna(data[4,6])
+
+		data = readxlsheet(f, sheetinfo, skipblanks=:none)
+		@test size(data) == (6+7, 6+3)
+		@test data[2+7,1+3] == 1.
+		@test data[5+7,2+3] == "CCC"
+		@test data[3+7,3+3] == false
+		@test data[6+7,6+3] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4+7,3+3])
+		@test isna(data[4+7,6+3])
+
+		data = readxlsheet(f, sheetinfo, skipblankrows=:none)
+		@test size(data) == (6+7, 6)
+		@test data[2+7,1] == 1.
+		@test data[5+7,2] == "CCC"
+		@test data[3+7,3] == false
+		@test data[6+7,6] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4+7,3])
+		@test isna(data[4+7,6])
+
+		data = readxlsheet(f, sheetinfo, skipblankcols=:none)
+		@test size(data) == (6, 6+3)
+		@test data[2,1+3] == 1.
+		@test data[5,2+3] == "CCC"
+		@test data[3,3+3] == false
+		@test data[6,6+3] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4,3+3])
+		@test isna(data[4,6+3])
+
+		data = readxlsheet(f, sheetinfo, skipblanks=:all)
+		@test size(data) == (5, 5)
+		@test data[2,1] == 1.
+		@test data[4,2] == "CCC"
+		@test data[3,3] == false
+		@test data[5,5] == ExcelReaders.Time(15,2,00)
+
+		data = readxlsheet(f, sheetinfo, skipblankrows=:all, skipblankcols=:all)
+		@test size(data) == (5, 5)
+		@test data[2,1] == 1.
+		@test data[4,2] == "CCC"
+		@test data[3,3] == false
+		@test data[5,5] == ExcelReaders.Time(15,2,00)
+
+		data = readxlsheet(f, sheetinfo, skipblankrows=:all)
+		@test size(data) == (5, 6)
+		@test data[2,1] == 1.
+		@test data[4,2] == "CCC"
+		@test data[3,3] == false
+		@test data[5,6] == ExcelReaders.Time(15,2,00)
+		@test isna(data[2,4])
+
+		data = readxlsheet(f, sheetinfo, skipstartrows=1, skipstartcols=1, nrows=11, ncols=7)
+		@test size(data) == (11, 7)
+		@test data[2+6,1+2] == 1.
+		@test data[5+6,2+2] == "CCC"
+		@test data[3+6,3+2] == false
+		@test_throws BoundsError data[6+6,6+2] == ExcelReaders.Time(15,2,00)
+		@test isna(data[4+6,2+2])
+	end
 end

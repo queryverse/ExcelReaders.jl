@@ -74,12 +74,36 @@ function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Int=0, s
 		end
 
 		if skipblankrows==:notset
-			skipblankrows = :start
+			if skipstartrows==0 && nrows==-1
+				skipblankrows = :start
+			else
+				skipblankrows = :none
+			end
 		end
 
 		if skipblankcols==:notset
-			skipblankcols = :start
+			if skipstartcols==0 && ncols==-1
+				skipblankcols = :start
+			else
+				skipblankcols = :none
+			end
 		end
+	end
+
+	if skipblankrows!=:none && skipstartrows>0
+		error("When skipstartrows is used, no option to skip blank rows can be used.")
+	end
+
+	if skipblankcols!=:none && skipstartcols>0
+		error("When skipstartcols is used, no option to skip blank cols can be used.")
+	end
+
+	if skipblankrows!=:none && nrows!=-1
+		error("When nrows is used, no option to skip blank rows can be used.")
+	end
+
+	if skipblankcols!=:none && ncols!=-1
+		error("When ncols is used, no option to skip blank cols can be used.")
 	end
 
 	sheet = file.workbook[:sheet_by_name](sheetname)
