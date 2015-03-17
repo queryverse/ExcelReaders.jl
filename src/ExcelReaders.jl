@@ -52,7 +52,7 @@ function readxlsheet(filename::String, sheetname::String; args...)
 	return readxlsheet(file, sheetname; args...)
 end
 
-function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Int=0, skipstartcols::Int=0, nrows::Int=-1, ncols::Int=-1, skipblanks=:notset, skipblankrows=:notset, skipblankcols=:notset)
+function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Int=0, skipstartcols::Int=0, nrows::Int=-1, ncols::Int=-1, skipblanks::Symbol=:notset, skipblankrows::Symbol=:notset, skipblankcols::Symbol=:notset)
 	if skipblanks != :notset
 		if !(skipblanks==:none || skipblanks==:start || skipblanks==:all)
 			error("Only :none, :start or :all are valid skipblanks arguments.")

@@ -176,8 +176,8 @@ for f in [file, filename]
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipblankrows=:start)
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipblankcols=:all)
 
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipblankrows=2)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipblankcols=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipstartrows=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipstartcols=2)
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, nrows=2)
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, ncols=2)
 
