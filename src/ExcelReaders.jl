@@ -2,7 +2,7 @@ module ExcelReaders
 
 import Base.show
 
-export openxl, readxl, ExcelErrorCell
+export openxl, readxl, readxlsheet, ExcelErrorCell
 
 using PyCall, DataArrays, DataFrames, Dates
 
@@ -35,6 +35,121 @@ end
 function openxl(filename::String)
 	wb = xlrd.open_workbook(filename)
 	return ExcelFile(wb, basename(filename))
+end
+
+function readxlsheet(filename::String, sheetindex::Int; args...)
+	file = openxl(filename)
+	return readxlsheet(file, sheetindex; args...)
+end
+
+function readxlsheet(file::ExcelFile, sheetindex::Int; args...)
+	sheetnames = file.workbook[:sheet_names]()
+	return readxlsheet(file, sheetnames[sheetindex]; args...)
+end
+
+function readxlsheet(filename::String, sheetname::String; args...)
+	file = openxl(filename)
+	return readxlsheet(file, sheetname; args...)
+end
+
+function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Int=0, skipstartcols::Int=0, nrows::Int=-1, ncols::Int=-1, skipblanks=:notset, skipblankrows=:notset, skipblankcols=:notset)
+	if skipblanks != :notset
+		if !(skipblanks==:none || skipblanks==:start || skipblanks==:all)
+			error("Only :none, :start or :all are valid skipblanks arguments.")
+		end
+
+		if skipblankrows!=:notset || skipblankcols!=:notset
+			error("skipblanks cannot be used simultaniously with either skipblankrows or skipblankcols.")
+		end
+
+		skipblankrows = skipblanks
+		skipblankcols = skipblanks
+	else
+		if !(skipblankrows==:notset || skipblankrows==:none || skipblankrows==:start || skipblankrows==:all)
+			error("Only :none, :start or :all are valid skipblankrows arguments.")
+		end
+
+		if !(skipblankcols==:notset || skipblankcols==:none || skipblankcols==:start || skipblankcols==:all)
+			error("Only :none, :start or :all are valid skipblankcols arguments.")
+		end
+
+		if skipblankrows==:notset
+			skipblankrows = :start
+		end
+
+		if skipblankcols==:notset
+			skipblankcols = :start
+		end
+	end
+
+	sheet = file.workbook[:sheet_by_name](sheetname)
+
+	startrow = 1 + skipstartrows
+	startcol = 1 + skipstartcols
+
+	if nrows==-1
+		endrow = sheet[:nrows] - skipstartrows
+	else
+		endrow = nrows + skipstartrows
+	end
+
+	if ncols==-1
+		endcol = sheet[:ncols] - skipstartcols
+	else
+		endcol = ncols + skipstartcols
+	end
+
+	datawithblanks = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
+
+	if skipblankrows!=:none || skipblankcols!=:none
+		nrows, ncols = size(datawithblanks)
+
+		rows_to_keep = Array(Int,0)
+		found_row_with_data = false
+		for i=1:nrows
+			if skipblankrows==:none || (skipblankrows==:start && found_row_with_data)
+				push!(rows_to_keep, i)
+			else
+				for l=1:ncols
+					if !isna(datawithblanks[i,l])
+						push!(rows_to_keep, i)
+						found_row_with_data = true
+						break
+					end
+				end
+			end
+		end
+
+		cols_to_keep = Array(Int,0)
+		found_col_with_data = false
+		for i=1:ncols
+			if skipblankcols==:none || (skipblankcols==:start && found_col_with_data)
+				push!(cols_to_keep,i)
+			else
+				for l=1:nrows
+					if !isna(datawithblanks[l,i])
+						push!(cols_to_keep, i)
+						found_col_with_data = true
+						break
+					end
+				end
+			end
+		end
+
+		target_rows = length(rows_to_keep)
+		target_cols = length(cols_to_keep)
+
+		data = DataArray(Any, target_rows, target_cols)
+		for i=1:target_rows
+			for l=1:target_cols
+				data[i,l] = datawithblanks[rows_to_keep[i], cols_to_keep[l]]
+			end
+		end
+
+		return data
+	else
+		return datawithblanks
+	end
 end
 
 function colnum(col::String)
