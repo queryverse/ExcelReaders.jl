@@ -2,7 +2,12 @@ environment:
   matrix:
 # Releases
   - JULIAVERSION: "stable/win32"
+    PYTHONDIR: "C:\Python34"
+    PYTHON: "C:\Python34\python.exe"
+
   - JULIAVERSION: "stable/win64"
+    PYTHONDIR: "C:\Python34-x64"
+    PYTHON: "C:\Python34-x64\python.exe"
 # Nightlies
   # - JULIAVERSION: "download/win32"
   # - JULIAVERSION: "download/win64"
@@ -15,8 +20,8 @@ notifications:
 
 install:
 # Install and upate pip
-  - ps: (new-object net.webclient).DownloadFile("https://bootstrap.pypa.io/get-pip.py", "C:\projects\get-pip.py")
-  - python C:\projects\get-pip.py
+  - "SET PATH=%PYTHONDIR%;%PYTHONDIR%\\Scripts;%PATH%"
+  - python -m ensurepip
   - python -m pip install -U pip
 # Install xlrd
   - python -m pip install xlrd
