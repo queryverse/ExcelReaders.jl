@@ -14,13 +14,16 @@ notifications:
     on_build_status_changed: false
 
 install:
+# Install and upate pip
+  - ps: (new-object net.webclient).DownloadFile("https://bootstrap.pypa.io/get-pip.py", "C:\projects\get-pip.py")
+  - python C:\projects\get-pip.py
+  - python -m pip install -U pip
+# Install xlrd
+  - python -m pip install xlrd
 # Download most recent Julia Windows binary
   - ps: (new-object net.webclient).DownloadFile($("http://status.julialang.org/"+$env:JULIAVERSION), "C:\projects\julia-binary.exe")
 # Run installer silently, output to C:\projects\julia
   - C:\projects\julia-binary.exe /S /D=C:\projects\julia
-  - python -m ensurepip
-  - python -m pip install -U pip
-  - python -m pip install xlrd
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
