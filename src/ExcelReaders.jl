@@ -2,7 +2,7 @@ module ExcelReaders
 
 import Base.show
 
-export openxl, readxl, ExcelErrorCell
+export openxl, readxl, readxlsheet, ExcelErrorCell
 
 using PyCall, DataArrays, DataFrames, Dates
 
@@ -35,6 +35,86 @@ end
 function openxl(filename::String)
 	wb = xlrd.open_workbook(filename)
 	return ExcelFile(wb, basename(filename))
+end
+
+function readxlsheet(filename::String, sheetindex::Int; args...)
+	file = openxl(filename)
+	return readxlsheet(file, sheetindex; args...)
+end
+
+function readxlsheet(file::ExcelFile, sheetindex::Int; args...)
+	sheetnames = file.workbook[:sheet_names]()
+	return readxlsheet(file, sheetnames[sheetindex]; args...)
+end
+
+function readxlsheet(filename::String, sheetname::String; args...)
+	file = openxl(filename)
+	return readxlsheet(file, sheetname; args...)
+end
+
+function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Union(Int,Symbol)=:blanks, skipstartcols::Union(Int,Symbol)=:blanks, nrows::Union(Int,Symbol)=:all, ncols::Union(Int,Symbol)=:all)
+	isa(skipstartrows, Symbol) && skipstartrows!=:blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
+	isa(skipstartrows, Int) && skipstartrows<0 && error("Can't skip a negative number of rows")
+	isa(skipstartcols, Symbol) && skipstartcols!=:blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
+	isa(skipstartcols, Int) && skipstartcols<0 && error("Can't skip a negative number of columns")
+	isa(nrows, Symbol) && nrows!=:all && error("Only :all or an integer is a valid argument for nrows")
+	isa(nrows, Int) && nrows<0 && error("nrows should be :all or positive")
+	isa(ncols, Symbol) && ncols!=:all && error("Only :all or an integer is a valid argument for ncols")
+	isa(ncols, Int) && ncols<0 && error("ncols should be :all or positive")
+
+	sheet = file.workbook[:sheet_by_name](sheetname)
+	sheet_rows = sheet[:nrows]
+	sheet_cols = sheet[:ncols]
+
+	cell_value = sheet[:cell_value]
+
+	if skipstartrows==:blanks
+		startrow = -1
+		for cur_row in 1:sheet_rows, cur_col in 1:sheet_cols
+			cellval = cell_value(cur_row-1,cur_col-1)
+			if cellval!=""
+				startrow = cur_row
+				break
+			end
+		end
+		if startrow==-1
+			error("Sheet has no data")
+		end
+	else
+		startrow = 1 + skipstartrows
+	end
+
+	if skipstartcols==:blanks
+		startcol = -1
+		for cur_col in 1:sheet_cols, cur_row in 1:sheet_rows
+			cellval = cell_value(cur_row-1,cur_col-1)
+			if cellval!=""
+				startcol = cur_col
+				break
+			end
+		end
+		if startcol==-1
+			error("Sheet has no data")
+		end
+	else
+		startcol = 1 + skipstartcols
+	end
+
+	if nrows==:all
+		endrow = sheet_rows
+	else
+		endrow = nrows + skipstartrows
+	end
+
+	if ncols==:all
+		endcol = sheet_cols
+	else
+		endcol = ncols + skipstartcols
+	end
+
+	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
+
+	return data
 end
 
 function colnum(col::String)
