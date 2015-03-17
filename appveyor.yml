@@ -21,8 +21,6 @@ notifications:
 install:
 # Install and upate pip
   - "SET PATH=%PYTHONDIR%;%PYTHONDIR%\\Scripts;%PATH%"
-  - python -m ensurepip
-  - python -m pip install -U pip
 # Install xlrd
   - python -m pip install xlrd
 # Download most recent Julia Windows binary
