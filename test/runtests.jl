@@ -17,6 +17,14 @@ buffer = IOBuffer()
 show(buffer, file)
 @test takebuf_string(buffer) == "ExcelFile <TestData.xlsx>"
 
+for (k,v) in [0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?",36=>"#NUM!",15=>"#VALUE!"]
+	errorcell = ExcelErrorCell(k)
+	buffer = IOBuffer()
+	show(buffer, errorcell)
+	@test takebuf_string(buffer) == v
+end
+
+
 # Read into DataArray
 for f in [file, filename]
 	@test_throws ErrorException readxl(f, "Sheet1!C4:G3")
