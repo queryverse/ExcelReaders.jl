@@ -168,6 +168,7 @@ for f in [file, filename]
 	@test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4])
 
 	# Test readxlsheet function
+	@test_throws ErrorException readxlsheet(f, "Empty Sheet")
 	for sheetinfo=["Second Sheet", 2]
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartrows=-1)
 		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartrows=:nonsense)
