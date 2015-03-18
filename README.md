@@ -40,6 +40,25 @@ data1 = readxl(f, "Sheet1!A1:C4")
 data2 = readxl(f, "Sheet2!B4:F10")
 ````
 
+## Reading a whole sheet
+
+The ``readxlsheet`` function reads complete Excel sheets, without a need to specify precise range information. The most basic usage is
+
+````
+using ExcelReaders
+
+data = readxlsheet("Filename.xlsx", "Sheet1")
+````
+
+This will read all content on Sheet1 in the file Filename.xlsx. Eventual blank rows and columns at the top and left are skipped. ``readxlsheet`` takes a number of optional arguments:
+
+- ``skipstartrows`` accepts either ``:blanks`` (default) or a positive integer. With ``:blank`` any empty initial rows are skipped. An integer skips as many rows as specified.
+- ``skipstartcols`` accepts either ``:blanks`` (default) or a positive integer. With ``:blank`` any empty initial columns are skipped. An integer skips as many columns as specified.
+- ``nrows`` accepts either ``:all`` (default) or a positive integer. With ``:all``, all rows (except skipped ones) are read. An integer specifies the exact number of rows to be read.
+- ``ncols`` accepts either ``:all`` (default) or a postiive integer. With ``:all``, all columns (except skipped ones) are read. An integer specifies the exact number of columns to be read.
+
+``readxlsheet`` also accepts an ExcelFile (as obtained from ``openxl``) as its first argument.
+
 ## Reading into a DataFrame
 
 To read into a DataFrame:
