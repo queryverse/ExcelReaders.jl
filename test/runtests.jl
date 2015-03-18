@@ -48,8 +48,8 @@ for f in [file, filename]
 	@test isa(data[4,12], ExcelErrorCell)
 	@test isna(data[5,12])
 
-	df = readxl(DataFrame, f, "Sheet1!C3:N7")
-	@test ncol(df) == 12
+	df = readxl(DataFrame, f, "Sheet1!C3:O7")
+	@test ncol(df) == 13
 	@test nrow(df) == 4
 	@test isa(df[symbol("Some Float64s")], DataVector{Float64})
 	@test isa(df[symbol("Some Strings")], DataVector{UTF8String})
@@ -80,8 +80,8 @@ for f in [file, filename]
 	@test isna(df[4,symbol("Errors with NA")])
 
 
-	df = readxl(DataFrame, f, "Sheet1!C4:N7", header=false)
-	@test ncol(df) == 12
+	df = readxl(DataFrame, f, "Sheet1!C4:O7", header=false)
+	@test ncol(df) == 13
 	@test nrow(df) == 4
 	@test isa(df[1], DataVector{Float64})
 	@test isa(df[2], DataVector{UTF8String})
@@ -111,8 +111,8 @@ for f in [file, filename]
 	@test isa(df[1,11], ExcelErrorCell)
 	@test isna(df[4,12])
 
-	df = readxl(DataFrame, f, "Sheet1!C4:N7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12])
-	@test ncol(df) == 12
+	df = readxl(DataFrame, f, "Sheet1!C4:O7", header=false, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12, :c13])
+	@test ncol(df) == 13
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
@@ -142,8 +142,8 @@ for f in [file, filename]
 	@test isa(df[1,:c11], ExcelErrorCell)
 	@test isna(df[4,:c12])
 
-	df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12])
-	@test ncol(df) == 12
+	df = readxl(DataFrame, f, "Sheet1!C3:O7", header=true, colnames=[:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12, :c13])
+	@test ncol(df) == 13
 	@test nrow(df) == 4
 	@test isa(df[:c1], DataVector{Float64})
 	@test isa(df[:c2], DataVector{UTF8String})
