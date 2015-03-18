@@ -52,128 +52,69 @@ function readxlsheet(filename::String, sheetname::String; args...)
 	return readxlsheet(file, sheetname; args...)
 end
 
-function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Int=0, skipstartcols::Int=0, nrows::Int=-1, ncols::Int=-1, skipblanks::Symbol=:notset, skipblankrows::Symbol=:notset, skipblankcols::Symbol=:notset)
-	if skipblanks != :notset
-		if !(skipblanks==:none || skipblanks==:start || skipblanks==:all)
-			error("Only :none, :start or :all are valid skipblanks arguments.")
-		end
-
-		if skipblankrows!=:notset || skipblankcols!=:notset
-			error("skipblanks cannot be used simultaniously with either skipblankrows or skipblankcols.")
-		end
-
-		skipblankrows = skipblanks
-		skipblankcols = skipblanks
-	else
-		if !(skipblankrows==:notset || skipblankrows==:none || skipblankrows==:start || skipblankrows==:all)
-			error("Only :none, :start or :all are valid skipblankrows arguments.")
-		end
-
-		if !(skipblankcols==:notset || skipblankcols==:none || skipblankcols==:start || skipblankcols==:all)
-			error("Only :none, :start or :all are valid skipblankcols arguments.")
-		end
-
-		if skipblankrows==:notset
-			if skipstartrows==0 && nrows==-1
-				skipblankrows = :start
-			else
-				skipblankrows = :none
-			end
-		end
-
-		if skipblankcols==:notset
-			if skipstartcols==0 && ncols==-1
-				skipblankcols = :start
-			else
-				skipblankcols = :none
-			end
-		end
-	end
-
-	if skipblankrows!=:none && skipstartrows>0
-		error("When skipstartrows is used, no option to skip blank rows can be used.")
-	end
-
-	if skipblankcols!=:none && skipstartcols>0
-		error("When skipstartcols is used, no option to skip blank cols can be used.")
-	end
-
-	if skipblankrows!=:none && nrows!=-1
-		error("When nrows is used, no option to skip blank rows can be used.")
-	end
-
-	if skipblankcols!=:none && ncols!=-1
-		error("When ncols is used, no option to skip blank cols can be used.")
-	end
+function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Union(Int,Symbol)=:blanks, skipstartcols::Union(Int,Symbol)=:blanks, nrows::Union(Int,Symbol)=:all, ncols::Union(Int,Symbol)=:all)
+	isa(skipstartrows, Symbol) && skipstartrows!=:blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
+	isa(skipstartrows, Int) && skipstartrows<0 && error("Can't skip a negative number of rows")
+	isa(skipstartcols, Symbol) && skipstartcols!=:blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
+	isa(skipstartcols, Int) && skipstartcols<0 && error("Can't skip a negative number of columns")
+	isa(nrows, Symbol) && nrows!=:all && error("Only :all or an integer is a valid argument for nrows")
+	isa(nrows, Int) && nrows<0 && error("nrows should be :all or positive")
+	isa(ncols, Symbol) && ncols!=:all && error("Only :all or an integer is a valid argument for ncols")
+	isa(ncols, Int) && ncols<0 && error("ncols should be :all or positive")
 
 	sheet = file.workbook[:sheet_by_name](sheetname)
+	sheet_rows = sheet[:nrows]
+	sheet_cols = sheet[:ncols]
 
-	startrow = 1 + skipstartrows
-	startcol = 1 + skipstartcols
+	cell_value = sheet[:cell_value]
 
-	if nrows==-1
-		endrow = sheet[:nrows] - skipstartrows
+	if skipstartrows==:blanks
+		startrow = -1
+		for cur_row in 1:sheet_rows, cur_col in 1:sheet_cols
+			cellval = cell_value(cur_row-1,cur_col-1)
+			if cellval!=""
+				startrow = cur_row
+				break
+			end
+		end
+		if startrow==-1
+			error("Sheet has no data")
+		end
+	else
+		startrow = 1 + skipstartrows
+	end
+
+	if skipstartcols==:blanks
+		startcol = -1
+		for cur_col in 1:sheet_cols, cur_row in 1:sheet_rows
+			cellval = cell_value(cur_row-1,cur_col-1)
+			if cellval!=""
+				startcol = cur_col
+				break
+			end
+		end
+		if startcol==-1
+			error("Sheet has no data")
+		end
+	else
+		startcol = 1 + skipstartcols
+	end
+
+	if nrows==:all
+		endrow = sheet_rows
 	else
 		endrow = nrows + skipstartrows
 	end
 
-	if ncols==-1
-		endcol = sheet[:ncols] - skipstartcols
+	if ncols==:all
+		endcol = sheet_cols
 	else
 		endcol = ncols + skipstartcols
 	end
 
-	datawithblanks = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
+	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 
-	if skipblankrows!=:none || skipblankcols!=:none
-		nrows, ncols = size(datawithblanks)
-
-		rows_to_keep = Array(Int,0)
-		found_row_with_data = false
-		for i=1:nrows
-			if skipblankrows==:none || (skipblankrows==:start && found_row_with_data)
-				push!(rows_to_keep, i)
-			else
-				for l=1:ncols
-					if !isna(datawithblanks[i,l])
-						push!(rows_to_keep, i)
-						found_row_with_data = true
-						break
-					end
-				end
-			end
-		end
-
-		cols_to_keep = Array(Int,0)
-		found_col_with_data = false
-		for i=1:ncols
-			if skipblankcols==:none || (skipblankcols==:start && found_col_with_data)
-				push!(cols_to_keep,i)
-			else
-				for l=1:nrows
-					if !isna(datawithblanks[l,i])
-						push!(cols_to_keep, i)
-						found_col_with_data = true
-						break
-					end
-				end
-			end
-		end
-
-		target_rows = length(rows_to_keep)
-		target_cols = length(cols_to_keep)
-
-		data = DataArray(Any, target_rows, target_cols)
-		for i=1:target_rows
-			for l=1:target_cols
-				data[i,l] = datawithblanks[rows_to_keep[i], cols_to_keep[l]]
-			end
-		end
-
-		return data
-	else
-		return datawithblanks
-	end
+	return data
 end
 
 function colnum(col::String)

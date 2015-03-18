@@ -169,17 +169,17 @@ for f in [file, filename]
 
 	# Test readxlsheet function
 	for sheetinfo=["Second Sheet", 2]
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:nonsense)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblankrows=:nonsense)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblankcols=:nonsense)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartrows=-1)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartrows=:nonsense)
 
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipblankrows=:start)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipblankcols=:all)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartcols=-1)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, skipstartcols=:nonsense)
 
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, skipstartrows=2)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, skipstartcols=2)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:all, nrows=2)
-		@test_throws ErrorException readxlsheet(f, sheetinfo, skipblanks=:start, ncols=2)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, nrows=-1)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, nrows=:nonsense)
+
+		@test_throws ErrorException readxlsheet(f, sheetinfo, ncols=-1)
+		@test_throws ErrorException readxlsheet(f, sheetinfo, ncols=:nonsense)
 
 		data = readxlsheet(f, sheetinfo)
 		@test size(data) == (6, 6)
@@ -190,7 +190,7 @@ for f in [file, filename]
 		@test isna(data[4,3])
 		@test isna(data[4,6])
 
-		data = readxlsheet(f, sheetinfo, skipblanks=:start)
+		data = readxlsheet(f, sheetinfo, skipstartrows=:blanks, skipstartcols=:blanks)
 		@test size(data) == (6, 6)
 		@test data[2,1] == 1.
 		@test data[5,2] == "CCC"
@@ -199,16 +199,7 @@ for f in [file, filename]
 		@test isna(data[4,3])
 		@test isna(data[4,6])
 
-		data = readxlsheet(f, sheetinfo, skipblankrows=:start, skipblankcols=:start)
-		@test size(data) == (6, 6)
-		@test data[2,1] == 1.
-		@test data[5,2] == "CCC"
-		@test data[3,3] == false
-		@test data[6,6] == ExcelReaders.Time(15,2,00)
-		@test isna(data[4,3])
-		@test isna(data[4,6])
-
-		data = readxlsheet(f, sheetinfo, skipblanks=:none)
+		data = readxlsheet(f, sheetinfo, skipstartrows=0, skipstartcols=0)
 		@test size(data) == (6+7, 6+3)
 		@test data[2+7,1+3] == 1.
 		@test data[5+7,2+3] == "CCC"
@@ -217,7 +208,7 @@ for f in [file, filename]
 		@test isna(data[4+7,3+3])
 		@test isna(data[4+7,6+3])
 
-		data = readxlsheet(f, sheetinfo, skipblankrows=:none)
+		data = readxlsheet(f, sheetinfo, skipstartrows=0, )
 		@test size(data) == (6+7, 6)
 		@test data[2+7,1] == 1.
 		@test data[5+7,2] == "CCC"
@@ -226,7 +217,7 @@ for f in [file, filename]
 		@test isna(data[4+7,3])
 		@test isna(data[4+7,6])
 
-		data = readxlsheet(f, sheetinfo, skipblankcols=:none)
+		data = readxlsheet(f, sheetinfo, skipstartcols=0)
 		@test size(data) == (6, 6+3)
 		@test data[2,1+3] == 1.
 		@test data[5,2+3] == "CCC"
@@ -234,28 +225,6 @@ for f in [file, filename]
 		@test data[6,6+3] == ExcelReaders.Time(15,2,00)
 		@test isna(data[4,3+3])
 		@test isna(data[4,6+3])
-
-		data = readxlsheet(f, sheetinfo, skipblanks=:all)
-		@test size(data) == (5, 5)
-		@test data[2,1] == 1.
-		@test data[4,2] == "CCC"
-		@test data[3,3] == false
-		@test data[5,5] == ExcelReaders.Time(15,2,00)
-
-		data = readxlsheet(f, sheetinfo, skipblankrows=:all, skipblankcols=:all)
-		@test size(data) == (5, 5)
-		@test data[2,1] == 1.
-		@test data[4,2] == "CCC"
-		@test data[3,3] == false
-		@test data[5,5] == ExcelReaders.Time(15,2,00)
-
-		data = readxlsheet(f, sheetinfo, skipblankrows=:all)
-		@test size(data) == (5, 6)
-		@test data[2,1] == 1.
-		@test data[4,2] == "CCC"
-		@test data[3,3] == false
-		@test data[5,6] == ExcelReaders.Time(15,2,00)
-		@test isna(data[2,4])
 
 		data = readxlsheet(f, sheetinfo, skipstartrows=1, skipstartcols=1, nrows=11, ncols=7)
 		@test size(data) == (11, 7)
