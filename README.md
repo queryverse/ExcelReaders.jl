@@ -13,6 +13,8 @@ You will need to have the Python xlrd library installed on your machine in order
 
 Once xlrd is installed, then you can just use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
 
+ExcelReaders currently doesn't work on Julia 0.4.
+
 ## Alternatives
 
 The [Taro](https://github.com/aviks/Taro.jl) package also provides Excel file reading functionality. The main difference between the two packages (in terms of Excel functionality) is that ExcelReaders uses the Python package [xlrd](https://github.com/python-excel/xlrd) for its processing, whereas Taro uses the Java packages Apache [Tika](http://tika.apache.org/) and Apache [POI](http://poi.apache.org/).
