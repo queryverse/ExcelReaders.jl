@@ -23,7 +23,7 @@ The [Taro](https://github.com/aviks/Taro.jl) package also provides Excel file re
 
 The most basic usage is this:
 
-````
+````julia
 using ExcelReaders
 
 data = readxl("Filename.xlsx", "Sheet1!A1:C4")
@@ -33,7 +33,7 @@ This will return a ``DataMatrix{Any}`` with all the data in the cell range A1 to
 
 If you expect to read multiple ranges from the same Excel file you can get much better performance by opening the Excel file only once:
 
-````
+````julia
 using ExcelReaders
 
 f = openxl("Filename.xlsx")
@@ -46,7 +46,7 @@ data2 = readxl(f, "Sheet2!B4:F10")
 
 The ``readxlsheet`` function reads complete Excel sheets, without a need to specify precise range information. The most basic usage is
 
-````
+````julia
 using ExcelReaders
 
 data = readxlsheet("Filename.xlsx", "Sheet1")
@@ -65,7 +65,7 @@ This will read all content on Sheet1 in the file Filename.xlsx. Eventual blank r
 
 To read into a DataFrame:
 
-````
+````julia
 using ExcelReaders
 using DataFrames
 
@@ -76,14 +76,14 @@ This code will use the first row in the range A1:C4 as the column names in the D
 
 To read in data without a header row use
 
-````
+````julia
 df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4", header=false)
 ````
 
 This will auto-generate column names. Alternatively you can specify your own names:
 
-````
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4", 
+````julia
+df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4",
             header=false, colnames=[:name1, :name2, :name3])
 ````
 
