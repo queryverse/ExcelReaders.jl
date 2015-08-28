@@ -3,7 +3,8 @@ using Base.Test
 using PyCall
 using DataArrays
 using DataFrames
-using Dates
+VERSION < v"0.4-" && using Dates
+using Compat
 
 # TODO Throw julia specific exceptions for these errors
 @test_throws PyCall.PyError openxl("FileThatDoesNotExist.xlsx")
@@ -17,7 +18,7 @@ buffer = IOBuffer()
 show(buffer, file)
 @test takebuf_string(buffer) == "ExcelFile <TestData.xlsx>"
 
-for (k,v) in [0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?",36=>"#NUM!",15=>"#VALUE!"]
+for (k,v) in @compat Dict(0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?",36=>"#NUM!",15=>"#VALUE!")
 	errorcell = ExcelErrorCell(k)
 	buffer = IOBuffer()
 	show(buffer, errorcell)

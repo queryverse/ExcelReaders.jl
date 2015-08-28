@@ -2,3 +2,4 @@ PyCall
 DataArrays
 DataFrames
 Dates
+Compat

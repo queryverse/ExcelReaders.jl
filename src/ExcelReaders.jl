@@ -1,10 +1,11 @@
 module ExcelReaders
 
+using Compat, PyCall, DataArrays, DataFrames
+VERSION < v"0.4-" && using Dates
+
 import Base.show
 
 export openxl, readxl, readxlsheet, ExcelErrorCell
-
-using PyCall, DataArrays, DataFrames, Dates
 
 @pyimport xlrd
 
@@ -130,9 +131,9 @@ function convert_ref_to_sheet_row_col(range::String)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
     m=match(r, range)
     sheetname=string(m.captures[1])
-    startrow=int(m.captures[3])
+    startrow=parse(Int,m.captures[3])
     startcol=colnum(m.captures[2])
-    endrow=int(m.captures[5])
+    endrow=parse(Int,m.captures[5])
     endcol=colnum(m.captures[4])
     if (startrow > endrow ) || (startcol>endcol)
 		error("Please provide rectangular region from top left to bottom right corner")

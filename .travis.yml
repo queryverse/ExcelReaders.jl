@@ -7,7 +7,7 @@ compiler:
 env:
   matrix:
     - JULIAVERSION="juliareleases"
-#    - JULIAVERSION="julianightlies"
+    - JULIAVERSION="julianightlies"
 notifications:
   email: false
 before_install:

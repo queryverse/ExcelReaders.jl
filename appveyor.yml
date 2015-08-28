@@ -9,8 +9,13 @@ environment:
     PYTHONDIR: "C:\\Python34-x64"
     PYTHON: "C:\\Python34-x64\\python.exe"
 # Nightlies
-  # - JULIAVERSION: "download/win32"
-  # - JULIAVERSION: "download/win64"
+  - JULIAVERSION: "download/win32"
+    PYTHONDIR: "C:\\Python34"
+    PYTHON: "C:\\Python34\\python.exe"
+
+  - JULIAVERSION: "download/win64"
+    PYTHONDIR: "C:\\Python34-x64"
+    PYTHON: "C:\\Python34-x64\\python.exe"
 
 notifications:
   - provider: Email
