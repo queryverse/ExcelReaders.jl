@@ -1,5 +1,6 @@
-PyCall
+julia 0.3
+Compat
 DataArrays
 DataFrames
 Dates
-Compat
+PyCall
