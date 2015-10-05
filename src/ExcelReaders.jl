@@ -1,7 +1,6 @@
 module ExcelReaders
 
-using Compat, PyCall, DataArrays, DataFrames
-VERSION < v"0.4-" && using Dates
+using PyCall, DataArrays, DataFrames
 
 import Base.show
 

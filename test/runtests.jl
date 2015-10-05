@@ -18,7 +18,7 @@ buffer = IOBuffer()
 show(buffer, file)
 @test takebuf_string(buffer) == "ExcelFile <TestData.xlsx>"
 
-for (k,v) in @compat Dict(0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?",36=>"#NUM!",15=>"#VALUE!")
+for (k,v) in Dict(0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?",36=>"#NUM!",15=>"#VALUE!")
 	errorcell = ExcelErrorCell(k)
 	buffer = IOBuffer()
 	show(buffer, errorcell)
