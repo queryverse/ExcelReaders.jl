@@ -11,7 +11,7 @@ export openxl, readxl, readxlsheet, ExcelErrorCell
 
 type ExcelFile
 	workbook::PyObject
-	filename::String
+	filename::UTF8String
 end
 
 type ExcelErrorCell
@@ -33,12 +33,12 @@ function show(io::IO, o::ExcelErrorCell)
 	print(io, xlrd.error_text_from_code[o.errorcode])
 end
 
-function openxl(filename::String)
+function openxl(filename::AbstractString)
 	wb = xlrd.open_workbook(filename)
 	return ExcelFile(wb, basename(filename))
 end
 
-function readxlsheet(filename::String, sheetindex::Int; args...)
+function readxlsheet(filename::AbstractString, sheetindex::Int; args...)
 	file = openxl(filename)
 	return readxlsheet(file, sheetindex; args...)
 end
@@ -48,12 +48,12 @@ function readxlsheet(file::ExcelFile, sheetindex::Int; args...)
 	return readxlsheet(file, sheetnames[sheetindex]; args...)
 end
 
-function readxlsheet(filename::String, sheetname::String; args...)
+function readxlsheet(filename::AbstractString, sheetname::AbstractString; args...)
 	file = openxl(filename)
 	return readxlsheet(file, sheetname; args...)
 end
 
-function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Union(Int,Symbol)=:blanks, skipstartcols::Union(Int,Symbol)=:blanks, nrows::Union(Int,Symbol)=:all, ncols::Union(Int,Symbol)=:all)
+function readxlsheet(file::ExcelFile, sheetname::AbstractString; skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
 	isa(skipstartrows, Symbol) && skipstartrows!=:blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
 	isa(skipstartrows, Int) && skipstartrows<0 && error("Can't skip a negative number of rows")
 	isa(skipstartcols, Symbol) && skipstartcols!=:blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
@@ -118,7 +118,7 @@ function readxlsheet(file::ExcelFile, sheetname::String; skipstartrows::Union(In
 	return data
 end
 
-function colnum(col::String)
+function colnum(col::AbstractString)
 	cl=uppercase(col)
 	r=0
 	for c in cl
@@ -127,7 +127,7 @@ function colnum(col::String)
 	return r
 end
 
-function convert_ref_to_sheet_row_col(range::String)
+function convert_ref_to_sheet_row_col(range::AbstractString)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
     m=match(r, range)
     sheetname=string(m.captures[1])
@@ -143,19 +143,19 @@ function convert_ref_to_sheet_row_col(range::String)
 end
 
 
-function readxl(filename::String, range::String)
+function readxl(filename::AbstractString, range::AbstractString)
 	excelfile = openxl(filename)
 
 	readxl(excelfile, range)
 end
 
-function readxl(file::ExcelFile, range::String)
+function readxl(file::ExcelFile, range::AbstractString)
 	sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
 
 	readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 end
 
-function readxl_internal(file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
+function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
 	wb = file.workbook
 	ws = wb[:sheet_by_name](sheetname)
 
@@ -169,7 +169,7 @@ function readxl_internal(file::ExcelFile, sheetname::String, startrow::Int, star
 			else
 				celltype = ws[:cell_type](row-1,col-1)
 				if celltype == xlrd.XL_CELL_TEXT
-					data[row-startrow+1, col-startcol+1] = convert(String, cellval)
+					data[row-startrow+1, col-startcol+1] = convert(UTF8String, cellval)
 				elseif celltype == xlrd.XL_CELL_NUMBER
 					data[row-startrow+1, col-startcol+1] = convert(Float64, cellval)
 				elseif celltype == xlrd.XL_CELL_DATE
@@ -193,19 +193,19 @@ function readxl_internal(file::ExcelFile, sheetname::String, startrow::Int, star
 	return data
 end
 
-function readxl(::Type{DataFrame}, filename::String, range::String; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
+function readxl(::Type{DataFrame}, filename::AbstractString, range::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
 	excelfile = openxl(filename)
 
 	readxl(DataFrame, excelfile, range, header=header, colnames=colnames)
 end
 
-function readxl(::Type{DataFrame}, file::ExcelFile, range::String; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
+function readxl(::Type{DataFrame}, file::ExcelFile, range::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
 	sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
 
 	readxl_internal(DataFrame, file, sheetname, startrow, startcol, endrow, endcol, header=header, colnames=colnames)
 end
 
-function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::String, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
+function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
 	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 
 	nrow, ncol = size(data)
