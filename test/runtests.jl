@@ -3,8 +3,6 @@ using Base.Test
 using PyCall
 using DataArrays
 using DataFrames
-VERSION < v"0.4-" && using Dates
-using Compat
 
 # TODO Throw julia specific exceptions for these errors
 @test_throws PyCall.PyError openxl("FileThatDoesNotExist.xlsx")
