@@ -1,12 +1,36 @@
+__precompile__()
+
 module ExcelReaders
 
 using PyCall, DataArrays, DataFrames
 
-import Base.show
+import Base.show, Conda
 
 export openxl, readxl, readxlsheet, ExcelErrorCell
 
-@pyimport xlrd
+const xlrd  = PyCall.PyNULL()
+
+function __init__()
+    try
+        copy!(xlrd, pyimport("xlrd"))
+    catch e
+        if PyCall.conda
+            info("Installing xlrd via the Conda package...")
+            Conda.add("xlrd")
+            copy!(xlrd, pyimport("xlrd"))
+        else
+            error("""Failed to pyimport("xlrd"): ExcelReaders will not work until you have a functioning xlrd module.
+
+                  For automated ExcelReaders installation, try configuring PyCall to use the Conda Python distribution within Julia.  Relaunch Julia and run:
+                        ENV["PYTHON"]=""
+                        Pkg.build("PyCall")
+                        using ExcelReaders
+
+                  pyimport exception was: """, e)
+        end
+    end
+
+end
 
 type ExcelFile
 	workbook::PyObject

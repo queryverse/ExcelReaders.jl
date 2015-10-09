@@ -8,6 +8,14 @@ environment:
   - JULIAVERSION: "stable/win64"
     PYTHONDIR: "C:\\Python34-x64"
     PYTHON: "C:\\Python34-x64\\python.exe"
+    
+  - JULIAVERSION: "stable/win32"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
+
+  - JULIAVERSION: "stable/win64"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
 # Nightlies
   - JULIAVERSION: "download/win32"
     PYTHONDIR: "C:\\Python34"
@@ -16,6 +24,14 @@ environment:
   - JULIAVERSION: "download/win64"
     PYTHONDIR: "C:\\Python34-x64"
     PYTHON: "C:\\Python34-x64\\python.exe"
+
+  - JULIAVERSION: "download/win32"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
+
+  - JULIAVERSION: "download/win64"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
 
 notifications:
   - provider: Email
