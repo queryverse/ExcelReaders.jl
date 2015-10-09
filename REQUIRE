@@ -3,4 +3,5 @@ Compat
 DataArrays
 DataFrames
 Dates
-PyCall
+PyCall 1.1
+Conda
