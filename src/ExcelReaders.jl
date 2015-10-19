@@ -1,12 +1,36 @@
+__precompile__()
+
 module ExcelReaders
 
 using PyCall, DataArrays, DataFrames
 
-import Base.show
+import Base.show, Conda
 
 export openxl, readxl, readxlsheet, ExcelErrorCell
 
-@pyimport xlrd
+const xlrd  = PyCall.PyNULL()
+
+function __init__()
+    try
+        copy!(xlrd, pyimport("xlrd"))
+    catch e
+        if PyCall.conda
+            info("Installing xlrd via the Conda package...")
+            Conda.add("xlrd")
+            copy!(xlrd, pyimport("xlrd"))
+        else
+            error("""Failed to pyimport("xlrd"): ExcelReaders will not work until you have a functioning xlrd module.
+
+                  For automated ExcelReaders installation, try configuring PyCall to use the Conda Python distribution within Julia.  Relaunch Julia and run:
+                        ENV["PYTHON"]=""
+                        Pkg.build("PyCall")
+                        using ExcelReaders
+
+                  pyimport exception was: """, e)
+        end
+    end
+
+end
 
 type ExcelFile
 	workbook::PyObject
@@ -29,11 +53,11 @@ function show(io::IO, o::ExcelFile)
 end
 
 function show(io::IO, o::ExcelErrorCell)
-	print(io, xlrd.error_text_from_code[o.errorcode])
+	print(io, xlrd[:error_text_from_code][o.errorcode])
 end
 
 function openxl(filename::AbstractString)
-	wb = xlrd.open_workbook(filename)
+	wb = xlrd[:open_workbook](filename)
 	return ExcelFile(wb, basename(filename))
 end
 
@@ -167,20 +191,20 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 				data[row-startrow+1, col-startcol+1] = NA
 			else
 				celltype = ws[:cell_type](row-1,col-1)
-				if celltype == xlrd.XL_CELL_TEXT
+				if celltype == xlrd[:XL_CELL_TEXT]
 					data[row-startrow+1, col-startcol+1] = convert(UTF8String, cellval)
-				elseif celltype == xlrd.XL_CELL_NUMBER
+				elseif celltype == xlrd[:XL_CELL_NUMBER]
 					data[row-startrow+1, col-startcol+1] = convert(Float64, cellval)
-				elseif celltype == xlrd.XL_CELL_DATE
-					date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd.xldate_as_tuple(cellval, wb[:datemode])
+				elseif celltype == xlrd[:XL_CELL_DATE]
+					date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
 					if date_month==0
 						data[row-startrow+1, col-startcol+1] = Time(date_hour, date_minute, date_sec)
 					else
 						data[row-startrow+1, col-startcol+1] = DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)	
 					end
-				elseif celltype == xlrd.XL_CELL_BOOLEAN
+				elseif celltype == xlrd[:XL_CELL_BOOLEAN]
 					data[row-startrow+1, col-startcol+1] = convert(Bool, cellval)
-				elseif celltype == xlrd.XL_CELL_ERROR
+				elseif celltype == xlrd[:XL_CELL_ERROR]
 					data[row-startrow+1, col-startcol+1] = ExcelErrorCell(cellval)
 				else
 					error("Unknown cell type")

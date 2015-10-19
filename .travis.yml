@@ -1,5 +1,6 @@
 language: python
 python:
+    - 2.6 # This test the use of Conda.jl as PyCall require 2.7
     - 2.7
     - 3.3
 compiler:
