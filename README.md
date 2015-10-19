@@ -10,9 +10,9 @@ ExcelReaders is a package that provides functionality to read Excel files.
 
 ## Installation
 
-You will need to have the Python xlrd library installed on your machine in order to use ExcelReaders.
+Use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
 
-Once xlrd is installed, then you can just use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
+The package uses the Python xlrd library. If either Python or the xlrd package are not installed on your system, the package will use the [conda.jl](https://github.com/Luthaf/Conda.jl) package to install all necessary dependencies automatically.
 
 ## Alternatives
 
