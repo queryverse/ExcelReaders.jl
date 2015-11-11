@@ -1,21 +1,37 @@
 environment:
   matrix:
 # Releases
-  - JULIAVERSION: "stable/win32"
+  - JULIAVERSION: "julialang/bin/winnt/x86/0.4/julia-0.4-latest-win32.exe"
     PYTHONDIR: "C:\\Python34"
     PYTHON: "C:\\Python34\\python.exe"
 
-  - JULIAVERSION: "stable/win64"
+  - JULIAVERSION: "julialang/bin/winnt/x64/0.4/julia-0.4-latest-win64.exe"
     PYTHONDIR: "C:\\Python34-x64"
     PYTHON: "C:\\Python34-x64\\python.exe"
+    
+  - JULIAVERSION: "julialang/bin/winnt/x86/0.4/julia-0.4-latest-win32.exe"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
+
+  - JULIAVERSION: "julialang/bin/winnt/x64/0.4/julia-0.4-latest-win64.exe"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
 # Nightlies
-  - JULIAVERSION: "download/win32"
+  - JULIAVERSION: "julianightlies/bin/winnt/x86/julia-latest-win32.exe"
     PYTHONDIR: "C:\\Python34"
     PYTHON: "C:\\Python34\\python.exe"
 
-  - JULIAVERSION: "download/win64"
+  - JULIAVERSION: "julianightlies/bin/winnt/x64/julia-latest-win64.exe"
     PYTHONDIR: "C:\\Python34-x64"
     PYTHON: "C:\\Python34-x64\\python.exe"
+
+  - JULIAVERSION: "julianightlies/bin/winnt/x86/julia-latest-win32.exe"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
+
+  - JULIAVERSION: "julianightlies/bin/winnt/x64/julia-latest-win64.exe"
+    PYTHONDIR: "use_conda"
+    PYTHON: "use_conda"
 
 notifications:
   - provider: Email
@@ -29,7 +45,9 @@ install:
 # Install xlrd
   - python -m pip install xlrd
 # Download most recent Julia Windows binary
-  - ps: (new-object net.webclient).DownloadFile($("http://status.julialang.org/"+$env:JULIAVERSION), "C:\projects\julia-binary.exe")
+  - ps: (new-object net.webclient).DownloadFile(
+        $("http://s3.amazonaws.com/"+$env:JULIAVERSION),
+        "C:\projects\julia-binary.exe")
 # Run installer silently, output to C:\projects\julia
   - C:\projects\julia-binary.exe /S /D=C:\projects\julia
 build_script:
