@@ -237,8 +237,7 @@ end
 
 function readxlsheet(::Type{DataFrame}, filename::AbstractString, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
 	excelfile = openxl(filename)
-    sheetname = excelfile.workbook[:sheet_names]()[sheetindex]
-	readxlsheet(DataFrame, excelfile, sheetname; args...)
+	readxlsheet(DataFrame, excelfile, sheetindex; args...)
 end
 
 function readxlsheet(::Type{DataFrame}, excelfile::ExcelFile, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
