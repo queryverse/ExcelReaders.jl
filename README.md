@@ -87,3 +87,9 @@ df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4",
 ````
 
 You can also combine ``header=true`` and a custom ``colnames`` list, in that case the first row in the specified range will just be skipped.
+
+To read the whole sheet into a DataFrame (respective keyword arguments (`header`, `skipstartrows` etc.) should work as expected):
+
+```julia
+df = readxlsheet(DataFrame, "Filename.xlsx", "Sheet1")
+```
