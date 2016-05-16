@@ -1,3 +1,8 @@
+ExcelReaders.jl v0.4.1 Release Notes
+====================================
+
+* Use pyimport_conda from PyCall to interact with conda
+
 ExcelReaders.jl v0.4.0 Release Notes
 ====================================
 
