@@ -8,7 +8,7 @@ import Base.show
 
 export openxl, readxl, readxlsheet, ExcelErrorCell
 
-const xlrd  = PyCall.PyNULL()
+const xlrd  = PyNULL()
 
 function __init__()
     copy!(xlrd, pyimport_conda("xlrd", "xlrd"))
