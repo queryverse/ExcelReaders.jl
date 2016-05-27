@@ -248,3 +248,5 @@ for f in [file, filename]
         @test isna(data[4+6,2+2])
     end
 end
+
+@test_throws ErrorException readxl(DataFrame, file, "Sheet2!C5:E7")
