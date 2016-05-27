@@ -58,7 +58,17 @@ function readxlsheet(filename::AbstractString, sheetname::AbstractString; args..
 	return readxlsheet(file, sheetname; args...)
 end
 
-function readxlsheet(file::ExcelFile, sheetname::AbstractString; skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
+function readxlsheet(file::ExcelFile, sheetname::AbstractString; args...)
+	sheet = file.workbook[:sheet_by_name](sheetname)
+	startrow, startcol, endrow, endcol = convert_args_to_row_col(sheet; args...)
+
+	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
+
+	return data
+end
+
+# Function converts "relative" range like skip rows/cols and size of range to "absolute" from row/col to row/col
+function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
 	isa(skipstartrows, Symbol) && skipstartrows!=:blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
 	isa(skipstartrows, Int) && skipstartrows<0 && error("Can't skip a negative number of rows")
 	isa(skipstartcols, Symbol) && skipstartcols!=:blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
@@ -67,8 +77,6 @@ function readxlsheet(file::ExcelFile, sheetname::AbstractString; skipstartrows::
 	isa(nrows, Int) && nrows<0 && error("nrows should be :all or positive")
 	isa(ncols, Symbol) && ncols!=:all && error("Only :all or an integer is a valid argument for ncols")
 	isa(ncols, Int) && ncols<0 && error("ncols should be :all or positive")
-
-	sheet = file.workbook[:sheet_by_name](sheetname)
 	sheet_rows = sheet[:nrows]
 	sheet_cols = sheet[:ncols]
 
@@ -118,9 +126,7 @@ function readxlsheet(file::ExcelFile, sheetname::AbstractString; skipstartrows::
 		endcol = ncols + skipstartcols
 	end
 
-	data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
-
-	return data
+	return startrow, startcol, endrow, endcol
 end
 
 function colnum(col::AbstractString)
@@ -146,7 +152,6 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
 
     return sheetname, startrow, startcol, endrow, endcol
 end
-
 
 function readxl(filename::AbstractString, range::AbstractString)
 	excelfile = openxl(filename)
@@ -208,6 +213,27 @@ function readxl(::Type{DataFrame}, file::ExcelFile, range::AbstractString; heade
 	sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
 
 	readxl_internal(DataFrame, file, sheetname, startrow, startcol, endrow, endcol, header=header, colnames=colnames)
+end
+
+function readxlsheet(::Type{DataFrame}, filename::AbstractString, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
+	excelfile = openxl(filename)
+	readxlsheet(DataFrame, excelfile, sheetindex; args...)
+end
+
+function readxlsheet(::Type{DataFrame}, excelfile::ExcelFile, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
+	sheetname = excelfile.workbook[:sheet_names]()[sheetindex]
+	readxlsheet(DataFrame, excelfile, sheetname; args...)
+end
+
+function readxlsheet(::Type{DataFrame}, filename::AbstractString, sheetname::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
+	excelfile = openxl(filename)
+	readxlsheet(DataFrame, excelfile, sheetname; header=header, colnames=colnames, args...)
+end
+
+function readxlsheet(::Type{DataFrame}, excelfile::ExcelFile, sheetname::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
+	sheet = excelfile.workbook[:sheet_by_name](sheetname)
+	startrow, startcol, endrow, endcol = convert_args_to_row_col(sheet; args...)
+	readxl_internal(DataFrame, excelfile, sheetname, startrow, startcol, endrow, endcol; header=header, colnames=colnames)
 end
 
 function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
