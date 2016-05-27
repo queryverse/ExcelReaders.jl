@@ -1,6 +1,7 @@
 ExcelReaders.jl v0.5.0 Release Notes
 ====================================
 * Add readxlsheet(DataFrame,...) support
+* Add inline documentation
 
 ExcelReaders.jl v0.4.1 Release Notes
 ====================================
