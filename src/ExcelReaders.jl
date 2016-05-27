@@ -6,19 +6,36 @@ using PyCall, DataArrays, DataFrames
 
 import Base.show
 
-export openxl, readxl, readxlsheet, ExcelErrorCell
+export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile
 
 const xlrd  = PyNULL()
+
+include("package_documentation.jl")
 
 function __init__()
     copy!(xlrd, pyimport_conda("xlrd", "xlrd"))
 end
 
+"""
+    ExcelFile
+
+A handle to an open Excel file.
+
+You can create an instance of an ``ExcelFile`` by calling ``openxl``.
+"""
 type ExcelFile
 	workbook::PyObject
 	filename::UTF8String
 end
 
+"""
+    ExcelErrorCell
+
+An Excel cell that has an Excel error.
+
+You cannot create ``ExcelErrorCell`` objects, they are returned if a cell in an
+Excel file has an Excel error.
+"""
 type ExcelErrorCell
 	errorcode::Int
 end
@@ -38,6 +55,22 @@ function show(io::IO, o::ExcelErrorCell)
 	print(io, xlrd[:error_text_from_code][o.errorcode])
 end
 
+"""
+    openxl(filename)
+
+Open the Excel file ``filename`` and return an ``ExcelFile`` handle.
+
+The returned ``ExcelFile`` handle can later be passed as the first argument to
+``readxl`` or ``readxslsheet`` to read from that file. If you will call either
+of those functions more than once, performance will be better if you open the
+file only once with ``openxl``.
+
+# Example
+````julia
+f = openxl("filename.xlsx")
+data = readxl(f, "Sheet1!A1:C4")
+````
+"""
 function openxl(filename::AbstractString)
 	wb = xlrd[:open_workbook](filename)
 	return ExcelFile(wb, basename(filename))
