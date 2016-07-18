@@ -174,6 +174,7 @@ end
 function convert_ref_to_sheet_row_col(range::AbstractString)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
     m=match(r, range)
+    m==nothing && error("Invalid Excel range specified.")
     sheetname=string(m.captures[1])
     startrow=parse(Int,m.captures[3])
     startcol=colnum(m.captures[2])
