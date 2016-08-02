@@ -12,7 +12,7 @@ before_install:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
   - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'Pkg.build("ExcelReaders")'
+  - julia -e 'ENV["PYTHON"]=""; Pkg.build("ExcelReaders")'
   - julia --check-bounds=yes -e 'Pkg.test("ExcelReaders", coverage=true)'
 after_success:
   - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
