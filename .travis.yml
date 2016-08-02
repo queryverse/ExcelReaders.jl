@@ -1,27 +1,18 @@
-language: python
-python:
-    - 2.6 # This test the use of Conda.jl as PyCall require 2.7
-    - 2.7
-    - 3.3
-compiler:
-  - clang
-env:
-  matrix:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
+language: julia
+os:
+  - osx
+  - linux
+julia:
+  - 0.4
+  - 0.5
+  - nightly
 notifications:
   email: false
 before_install:
-  - sudo add-apt-repository ppa:staticfloat/julia-deps -y
-  - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
-  - sudo apt-get update -qq -y
-  - sudo apt-get install libpcre3-dev julia -y
-  - pip install xlrd
-  - git config --global user.name "Travis User"
-  - git config --global user.email "travis@example.net"
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-  - julia -e 'versioninfo(); Pkg.init(); Pkg.clone(pwd())'
-  - julia --code-coverage test/runtests.jl
+  - julia -e 'Pkg.clone(pwd())'
+  - julia -e 'Pkg.build("ExcelReaders")'
+  - julia --check-bounds=yes -e 'Pkg.test("ExcelReaders", coverage=true)'
 after_success:
-  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
