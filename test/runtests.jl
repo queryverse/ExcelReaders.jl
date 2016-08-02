@@ -52,7 +52,7 @@ for f in [file, filename]
         @test ncol(df) == 13
         @test nrow(df) == 4
         @test isa(df[Symbol("Some Float64s")], DataVector{Float64})
-        @test isa(df[Symbol("Some Strings")], DataVector{UTF8String})
+        @test isa(df[Symbol("Some Strings")], DataVector{Compat.UTF8String})
         @test isa(df[Symbol("Some Bools")], DataVector{Bool})
         @test isa(df[Symbol("Mixed column")], DataVector{Any})
         @test isa(df[Symbol("Mixed with NA")], DataVector{Any})
@@ -84,7 +84,7 @@ for f in [file, filename]
     @test ncol(df) == 13
     @test nrow(df) == 4
     @test isa(df[1], DataVector{Float64})
-    @test isa(df[2], DataVector{UTF8String})
+    @test isa(df[2], DataVector{Compat.UTF8String})
     @test isa(df[3], DataVector{Bool})
     @test isa(df[4], DataVector{Any})
     @test isa(df[5], DataVector{Any})
@@ -116,7 +116,7 @@ for f in [file, filename]
     @test ncol(df) == 13
     @test nrow(df) == 4
     @test isa(df[:c1], DataVector{Float64})
-    @test isa(df[:c2], DataVector{UTF8String})
+    @test isa(df[:c2], DataVector{Compat.UTF8String})
     @test isa(df[:c3], DataVector{Bool})
     @test isa(df[:c4], DataVector{Any})
     @test isa(df[:c5], DataVector{Any})
@@ -149,7 +149,7 @@ for f in [file, filename]
         @test ncol(df) == 13
         @test nrow(df) == 4
         @test isa(df[:c1], DataVector{Float64})
-        @test isa(df[:c2], DataVector{UTF8String})
+        @test isa(df[:c2], DataVector{Compat.UTF8String})
         @test isa(df[:c3], DataVector{Bool})
         @test isa(df[:c4], DataVector{Any})
         @test isa(df[:c5], DataVector{Any})

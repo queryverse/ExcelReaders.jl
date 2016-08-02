@@ -2,7 +2,7 @@ __precompile__()
 
 module ExcelReaders
 
-using PyCall, DataArrays, DataFrames
+using PyCall, DataArrays, DataFrames, Compat
 
 import Base.show
 
@@ -175,7 +175,7 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
     m=match(r, range)
     m==nothing && error("Invalid Excel range specified.")
-    sheetname=string(m.captures[1])
+    sheetname=Compat.UTF8String(m.captures[1])
     startrow=parse(Int,m.captures[3])
     startcol=colnum(m.captures[2])
     endrow=parse(Int,m.captures[5])
@@ -183,7 +183,6 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
     if (startrow > endrow ) || (startcol>endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
-
     return sheetname, startrow, startcol, endrow, endcol
 end
 
@@ -195,7 +194,6 @@ end
 
 function readxl(file::ExcelFile, range::AbstractString)
     sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
-
     readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 end
 
@@ -213,7 +211,7 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
             else
                 celltype = ws[:cell_type](row-1,col-1)
                 if celltype == xlrd[:XL_CELL_TEXT]
-                    data[row-startrow+1, col-startcol+1] = convert(UTF8String, cellval)
+                    data[row-startrow+1, col-startcol+1] = convert(Compat.UTF8String, cellval)
                 elseif celltype == xlrd[:XL_CELL_NUMBER]
                     data[row-startrow+1, col-startcol+1] = convert(Float64, cellval)
                 elseif celltype == xlrd[:XL_CELL_DATE]

@@ -3,3 +3,4 @@ DataArrays
 DataFrames
 Dates
 PyCall 1.5
+Compat 0.8.6
