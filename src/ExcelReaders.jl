@@ -25,7 +25,7 @@ You can create an instance of an ``ExcelFile`` by calling ``openxl``.
 """
 type ExcelFile
     workbook::PyObject
-    filename::UTF8String
+    filename::AbstractString
 end
 
 """
