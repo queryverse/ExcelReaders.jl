@@ -1,7 +1,9 @@
-ExcelReaders.jl vnext Release Notes
+ExcelReaders.jl v0.6.0 Release Notes
 ===================================
-*Throw more meaningful errors for ill-specified Excel ranges
+* Throw more meaningful errors for ill-specified Excel ranges
+* julia 0.5 compatability
 
+ExcelReaders.jl v0.5.0 Release Notes
 ====================================
 * Add readxlsheet(DataFrame,...) support
 * Add inline documentation
