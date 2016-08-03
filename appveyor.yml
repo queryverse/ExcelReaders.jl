@@ -39,6 +39,11 @@ notifications:
     on_build_failure: false
     on_build_status_changed: false
 
+branches:
+  only:
+  - master
+  - /release-.*/
+
 install:
 # Install and upate pip
   - "SET PATH=%PYTHONDIR%;%PYTHONDIR%\\Scripts;%PATH%"

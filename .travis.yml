@@ -8,6 +8,10 @@ julia:
   - nightly
 notifications:
   email: false
+branches:
+  only:
+  - master
+  - /release-.*/
 before_install:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
