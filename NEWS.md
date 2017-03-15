@@ -1,3 +1,8 @@
+ExcelReaders.jl v0.7.0 Release Notes
+====================================
+* julia 0.6 compatability.
+* Drop julia 0.4 support.
+
 ExcelReaders.jl v0.6.0 Release Notes
 ===================================
 * Throw more meaningful errors for ill-specified Excel ranges

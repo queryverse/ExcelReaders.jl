@@ -301,7 +301,7 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
         error("Length of colnames must equal number of columns in selected range")
     end
 
-    columns = Array(Any, ncol)
+    columns = Array{Any}(ncol)
 
     for i=1:ncol
         if header
