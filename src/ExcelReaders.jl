@@ -361,17 +361,19 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
 end
 
 function readxlnames(f::ExcelFile)
-    return [String(i) for i in keys(f.workbook[:name_map])]
+    return [lowercase(i[:name]) for i in f.workbook[:name_obj_list] if i[:hidden]==0]
 end
 
 function readxlrange(f::ExcelFile, range::AbstractString)
-    a = f.workbook[:name_map][range]
-    if length(a)!=1
+    name = f.workbook[:name_map][lowercase(range)]
+    if length(name)!=1
         error("More than one reference per name, this case is not yet handled by ExcelReaders.")
     end
 
-    formula_text = f.workbook[:name_map][range][1][:formula_text]
+    formula_text = name[1][:formula_text]
     formula_text = replace(formula_text, "\$", "")
+    formula_text = replace(formula_text, "'", "")
+
     return readxl(f, formula_text)
 end
 
