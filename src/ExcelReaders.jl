@@ -6,7 +6,7 @@ using PyCall, DataArrays, DataFrames, Compat
 
 import Base.show
 
-export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile
+export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
 const xlrd  = PyNULL()
 
@@ -172,14 +172,19 @@ function colnum(col::AbstractString)
 end
 
 function convert_ref_to_sheet_row_col(range::AbstractString)
-    r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*):([A-Za-z]*)(\d*)"
+    r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*)(:([A-Za-z]*)(\d*))?"
     m=match(r, range)
     m==nothing && error("Invalid Excel range specified.")
     sheetname=Compat.UTF8String(m.captures[1])
     startrow=parse(Int,m.captures[3])
     startcol=colnum(m.captures[2])
-    endrow=parse(Int,m.captures[5])
-    endcol=colnum(m.captures[4])
+    if m.captures[4]==nothing
+        endrow=startrow
+        endcol=startcol
+    else
+        endrow=parse(Int,m.captures[6])
+        endcol=colnum(m.captures[5])
+    end
     if (startrow > endrow ) || (startcol>endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
@@ -197,42 +202,51 @@ function readxl(file::ExcelFile, range::AbstractString)
     readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
 end
 
+function get_cell_value(ws, row, col, wb)
+    cellval = ws[:cell_value](row-1,col-1)
+    if cellval==""
+        return NA
+    else
+        celltype = ws[:cell_type](row-1,col-1)
+        if celltype == xlrd[:XL_CELL_TEXT]
+            return convert(Compat.UTF8String, cellval)
+        elseif celltype == xlrd[:XL_CELL_NUMBER]
+            return convert(Float64, cellval)
+        elseif celltype == xlrd[:XL_CELL_DATE]
+            date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
+            if date_month==0
+                return Time(date_hour, date_minute, date_sec)
+            else
+                return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
+            end
+        elseif celltype == xlrd[:XL_CELL_BOOLEAN]
+            return convert(Bool, cellval)
+        elseif celltype == xlrd[:XL_CELL_ERROR]
+            return ExcelErrorCell(cellval)
+        else
+            error("Unknown cell type")
+        end
+    end
+end
+
 function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
     wb = file.workbook
     ws = wb[:sheet_by_name](sheetname)
 
-    data = DataArray(Any, endrow-startrow+1,endcol-startcol+1)
+    if startrow==endrow && startcol==endcol
+        return get_cell_value(ws, startrow, startcol, wb)
+    else
 
-    for row in startrow:endrow
-        for col in startcol:endcol
-            cellval = ws[:cell_value](row-1,col-1)
-            if cellval == ""
-                data[row-startrow+1, col-startcol+1] = NA
-            else
-                celltype = ws[:cell_type](row-1,col-1)
-                if celltype == xlrd[:XL_CELL_TEXT]
-                    data[row-startrow+1, col-startcol+1] = convert(Compat.UTF8String, cellval)
-                elseif celltype == xlrd[:XL_CELL_NUMBER]
-                    data[row-startrow+1, col-startcol+1] = convert(Float64, cellval)
-                elseif celltype == xlrd[:XL_CELL_DATE]
-                    date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
-                    if date_month==0
-                        data[row-startrow+1, col-startcol+1] = Time(date_hour, date_minute, date_sec)
-                    else
-                        data[row-startrow+1, col-startcol+1] = DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
-                    end
-                elseif celltype == xlrd[:XL_CELL_BOOLEAN]
-                    data[row-startrow+1, col-startcol+1] = convert(Bool, cellval)
-                elseif celltype == xlrd[:XL_CELL_ERROR]
-                    data[row-startrow+1, col-startcol+1] = ExcelErrorCell(cellval)
-                else
-                    error("Unknown cell type")
-                end
+        data = DataArray(Any, endrow-startrow+1,endcol-startcol+1)
+
+        for row in startrow:endrow
+            for col in startcol:endcol
+                data[row-startrow+1, col-startcol+1] = get_cell_value(ws, row, col, wb)
             end
         end
-    end
 
-    return data
+        return data
+    end
 end
 
 function readxl(::Type{DataFrame}, filename::AbstractString, range::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
@@ -344,6 +358,21 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
     df = DataFrame(columns, colnames)
 
     return df
+end
+
+function readxlnames(f::ExcelFile)
+    return [String(i) for i in keys(f.workbook[:name_map])]
+end
+
+function readxlrange(f::ExcelFile, range::AbstractString)
+    a = f.workbook[:name_map][range]
+    if length(a)!=1
+        error("More than one reference per name, this case is not yet handled by ExcelReaders.")
+    end
+
+    formula_text = f.workbook[:name_map][range][1][:formula_text]
+    formula_text = replace(formula_text, "\$", "")
+    return readxl(f, formula_text)
 end
 
 end # module
