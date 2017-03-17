@@ -249,4 +249,5 @@ for f in [file, filename]
     end
 end
 
-@test_throws ErrorException readxl(DataFrame, file, "Sheet2!C5:E7")
+# Test for constructing DataFrame with empty header cell
+@test names(readxl(DataFrame, file, "Sheet2!C5:E7")) == [:Col1, :x1, :Col3]

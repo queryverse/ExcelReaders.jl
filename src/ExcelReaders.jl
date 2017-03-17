@@ -289,10 +289,10 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
 
     if length(colnames)==0
         if header
-            headervec = data[1,:]
-            if any(isna(headervec))
-                error("There can't be empty cells in the header row.")
-            end
+            headervec = data[1, :]
+            NAcol = Bool.(isna(headervec))
+            headervec[NAcol] = DataFrames.gennames(countnz(NAcol))
+
             colnames = convert(Array{Symbol},vec(headervec))
         else
             colnames = DataFrames.gennames(ncol)
