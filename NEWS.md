@@ -1,11 +1,9 @@
-ExcelReaders.jl v0.8.0 Release Notes
-====================================
-* Autogenerate names for columns without a name in readxlsheet
-
 ExcelReaders.jl v0.7.0 Release Notes
 ====================================
 * julia 0.6 compatability.
 * Drop julia 0.4 support.
+* Autogenerate names for columns without a name in readxlsheet
+* Add readxlnames and readxlrange functions
 
 ExcelReaders.jl v0.6.0 Release Notes
 ===================================
