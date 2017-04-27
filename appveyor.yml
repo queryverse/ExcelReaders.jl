@@ -2,12 +2,12 @@ environment:
   matrix:
 # Releases
   - JULIAVERSION: "julialang/bin/winnt/x86/0.5/julia-0.5-latest-win32.exe"
-    PYTHONDIR: "C:\\Python34"
-    PYTHON: "C:\\Python34\\python.exe"
+    PYTHONDIR: "C:\\Python36"
+    PYTHON: "C:\\Python36\\python.exe"
 
   - JULIAVERSION: "julialang/bin/winnt/x64/0.5/julia-0.5-latest-win64.exe"
-    PYTHONDIR: "C:\\Python34-x64"
-    PYTHON: "C:\\Python34-x64\\python.exe"
+    PYTHONDIR: "C:\\Python36-x64"
+    PYTHON: "C:\\Python36-x64\\python.exe"
 
   - JULIAVERSION: "julialang/bin/winnt/x86/0.5/julia-0.5-latest-win32.exe"
     PYTHONDIR: "use_conda"
@@ -18,12 +18,12 @@ environment:
     PYTHON: "use_conda"
 
   - JULIAVERSION: "julialang/bin/winnt/x86/0.6/julia-0.6-latest-win32.exe"
-    PYTHONDIR: "C:\\Python34"
-    PYTHON: "C:\\Python34\\python.exe"
+    PYTHONDIR: "C:\\Python36"
+    PYTHON: "C:\\Python36\\python.exe"
 
   - JULIAVERSION: "julialang/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
-    PYTHONDIR: "C:\\Python34-x64"
-    PYTHON: "C:\\Python34-x64\\python.exe"
+    PYTHONDIR: "C:\\Python36-x64"
+    PYTHON: "C:\\Python36-x64\\python.exe"
 
   - JULIAVERSION: "julialang/bin/winnt/x86/0.6/julia-0.6-latest-win32.exe"
     PYTHONDIR: "use_conda"
