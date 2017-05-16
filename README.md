@@ -7,6 +7,7 @@
 [![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.3.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.3)
 [![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.4.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.4)
 [![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.5.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.5)
+[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.6.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.5)
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
