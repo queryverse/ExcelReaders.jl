@@ -1,3 +1,8 @@
+ExcelReaders.jl v0.8.0 Release Notes
+====================================
+* Drop julia 0.5 support.
+* Fix julia 0.6 deprecation warnings.
+
 ExcelReaders.jl v0.7.0 Release Notes
 ====================================
 * julia 0.6 compatability.
