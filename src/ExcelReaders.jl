@@ -290,7 +290,7 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
     if length(colnames)==0
         if header
             headervec = data[1, :]
-            NAcol = Bool.(isna(headervec))
+            NAcol = Bool.(isna.(headervec))
             headervec[NAcol] = DataFrames.gennames(countnz(NAcol))
 
             colnames = convert(Array{Symbol},vec(headervec))
