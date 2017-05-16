@@ -2,7 +2,7 @@ __precompile__()
 
 module ExcelReaders
 
-using PyCall, DataArrays, DataFrames, Compat
+using PyCall, DataArrays, DataFrames
 
 import Base.show
 
@@ -175,7 +175,7 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
     r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*)(:([A-Za-z]*)(\d*))?"
     m=match(r, range)
     m==nothing && error("Invalid Excel range specified.")
-    sheetname=Compat.UTF8String(m.captures[1])
+    sheetname=String(m.captures[1])
     startrow=parse(Int,m.captures[3])
     startcol=colnum(m.captures[2])
     if m.captures[4]==nothing
@@ -209,7 +209,7 @@ function get_cell_value(ws, row, col, wb)
     else
         celltype = ws[:cell_type](row-1,col-1)
         if celltype == xlrd[:XL_CELL_TEXT]
-            return convert(Compat.UTF8String, cellval)
+            return convert(String, cellval)
         elseif celltype == xlrd[:XL_CELL_NUMBER]
             return convert(Float64, cellval)
         elseif celltype == xlrd[:XL_CELL_DATE]
@@ -290,7 +290,7 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
     if length(colnames)==0
         if header
             headervec = data[1, :]
-            NAcol = Bool.(isna(headervec))
+            NAcol = Bool.(isna.(headervec))
             headervec[NAcol] = DataFrames.gennames(countnz(NAcol))
 
             colnames = convert(Array{Symbol},vec(headervec))
