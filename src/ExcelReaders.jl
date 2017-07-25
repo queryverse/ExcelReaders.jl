@@ -293,7 +293,9 @@ function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::Abstract
             NAcol = Bool.(isna.(headervec))
             headervec[NAcol] = DataFrames.gennames(countnz(NAcol))
 
-            colnames = convert(Array{Symbol},vec(headervec))
+            # This somewhat complicated conditional makes sure that column names
+            # that are integer numbers end up without an extra ".0" as their name
+            colnames = [isa(i, AbstractFloat) ? ( modf(i)[1]==0.0 ? Symbol(Int(i)) : Symbol(string(i)) ) : Symbol(i) for i in vec(headervec)]
         else
             colnames = DataFrames.gennames(ncol)
         end
