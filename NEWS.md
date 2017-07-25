@@ -1,3 +1,8 @@
+ExcelReaders.jl v0.8.1 Release Notes
+====================================
+* Drop unnecessary dependencies
+* Fix import of numerical column headers
+
 ExcelReaders.jl v0.8.0 Release Notes
 ====================================
 * Drop julia 0.5 support.
