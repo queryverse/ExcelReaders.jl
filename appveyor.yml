@@ -5,7 +5,7 @@ environment:
     PYTHONDIR: "C:\\Python36"
     PYTHON: "C:\\Python36\\python.exe"
 
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.5/julia-0.5-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
     PYTHONDIR: "C:\\Python36-x64"
     PYTHON: "C:\\Python36-x64\\python.exe"
 
@@ -13,7 +13,7 @@ environment:
     PYTHONDIR: "use_conda"
     PYTHON: "use_conda"
 
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.5/julia-0.5-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
     PYTHONDIR: "use_conda"
     PYTHON: "use_conda"
 
