@@ -126,6 +126,8 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
         end
         if startrow==-1
             error("Sheet has no data")
+        else
+            skipstartrows = startrow - 1
         end
     else
         startrow = 1 + skipstartrows
@@ -142,6 +144,8 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
         end
         if startcol==-1
             error("Sheet has no data")
+        else
+            skipstartcols = startcol - 1
         end
     else
         startcol = 1 + skipstartcols
