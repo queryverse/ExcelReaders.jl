@@ -46,38 +46,7 @@ for f in [file, filename]
     @test isa(data[4,12], ExcelErrorCell)
     @test DataValues.isna(data[5,12])
 
-    # full_dfs = [readxl(DataFrame, f, "Sheet1!C3:O7"), readxlsheet(DataFrame, f, "Sheet1")]
-    # for df in full_dfs
-    #     @test ncol(df) == 13
-    #     @test nrow(df) == 4
-    #     @test isa(df[Symbol("Some Float64s")], DataVector{Float64})
-    #     @test isa(df[Symbol("Some Strings")], DataVector{String})
-    #     @test isa(df[Symbol("Some Bools")], DataVector{Bool})
-    #     @test isa(df[Symbol("Mixed column")], DataVector{Any})
-    #     @test isa(df[Symbol("Mixed with NA")], DataVector{Any})
-    #     @test isa(df[Symbol("Some dates")], DataVector{Any})
-    #     @test isa(df[Symbol("Dates with NA")], DataVector{Any})
-    #     @test df[4,Symbol("Some Float64s")] == 2.5
-    #     @test df[4,Symbol("Some Strings")] == "DDDD"
-    #     @test df[4,Symbol("Some Bools")] == true
-    #     @test df[1,Symbol("Mixed column")] == 2.0
-    #     @test df[2,Symbol("Mixed column")] == "EEEEE"
-    #     @test df[3,Symbol("Mixed column")] == false
-    #     @test isna(df[3,Symbol("Mixed with NA")])
-    #     @test df[1,Symbol("Float64 with NA")] == 3.
-    #     @test isna(df[2,Symbol("Float64 with NA")])
-    #     @test df[1,Symbol("String with NA")] == "FF"
-    #     @test isna(df[2,Symbol("String with NA")])
-    #     @test df[2,Symbol("Bool with NA")] == true
-    #     @test isna(df[1,Symbol("Bool with NA")])
-    #     @test df[1,Symbol("Dates with NA")] == Date(1965,4,3)
-    #     @test df[2,Symbol("Some dates")] == DateTime(2015,2,4,10,14)
-    #     @test df[4,Symbol("Some dates")] == ExcelReaders.Time(15,2,0)
-    #     @test isna(df[4,Symbol("Dates with NA")])
-    #     # TODO Add a test that checks the error code, not just type
-    #     @test isa(df[1,Symbol("Some errors")], ExcelErrorCell)
-    #     @test isna(df[4,Symbol("Errors with NA")])
-    # end
+
 
     # df = readxl(DataFrame, f, "Sheet1!C4:O7", header=false)
     # @test ncol(df) == 13
