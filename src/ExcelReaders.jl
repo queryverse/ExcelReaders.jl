@@ -55,6 +55,9 @@ function show(io::IO, o::ExcelErrorCell)
     print(io, xlrd[:error_text_from_code][o.errorcode])
 end
 
+Base.promote_rule(::Type{DataValue{T}}, ::Type{ExcelErrorCell}) where {T}= Any
+Base.promote_rule(::Type{ExcelErrorCell}, ::Type{DataValue{T}}) where {T} = Any
+
 """
     openxl(filename)
 
