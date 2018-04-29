@@ -3,6 +3,8 @@ using Base.Test
 using PyCall
 using DataValues
 
+@testset "ExcelReaders" begin
+
 # TODO Throw julia specific exceptions for these errors
 @test_throws PyCall.PyError openxl("FileThatDoesNotExist.xlsx")
 @test_throws PyCall.PyError openxl("runtests.jl")
