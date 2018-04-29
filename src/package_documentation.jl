@@ -33,7 +33,7 @@ using ExcelReaders
 data = readxl("Filename.xlsx", "Sheet1!A1:C4")
 ````
 
-This will return a ``DataMatrix{Any}`` with all the data in the cell range A1 to
+This will return an array with all the data in the cell range A1 to
 C4 on Sheet1 in the Excel file Filename.xlsx.
 
 If you expect to read multiple ranges from the same Excel file you can get much
