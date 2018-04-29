@@ -22,7 +22,6 @@ for (k,v) in Dict(0=>"#NULL!",7=>"#DIV/0!",23 => "#REF!",42=>"#N/A",29=>"#NAME?"
     @test String(take!(buffer)) == v
 end
 
-
 # Read into DataValueArray
 for f in [file, filename]
     @test_throws ErrorException readxl(f, "Sheet1!C4:G3")
@@ -45,107 +44,6 @@ for f in [file, filename]
     @test isa(data[3,11], ExcelErrorCell)
     @test isa(data[4,12], ExcelErrorCell)
     @test DataValues.isna(data[5,12])
-
-
-
-    # df = readxl(DataFrame, f, "Sheet1!C4:O7", header=false)
-    # @test ncol(df) == 13
-    # @test nrow(df) == 4
-    # @test isa(df[1], DataVector{Float64})
-    # @test isa(df[2], DataVector{String})
-    # @test isa(df[3], DataVector{Bool})
-    # @test isa(df[4], DataVector{Any})
-    # @test isa(df[5], DataVector{Any})
-    # @test isa(df[9], DataVector{Any})
-    # @test isa(df[10], DataVector{Any})
-    # @test df[4,1] == 2.5
-    # @test df[4,2] == "DDDD"
-    # @test df[4,3] == true
-    # @test df[1,4] == 2.0
-    # @test df[2,4] == "EEEEE"
-    # @test df[3,4] == false
-    # @test isna(df[3,5])
-    # @test df[1,6] == 3.
-    # @test isna(df[2,6])
-    # @test df[1,7] == "FF"
-    # @test isna(df[2,7])
-    # @test df[2,8] == true
-    # @test isna(df[1,8])
-    # @test df[1,10] == Date(1965,4,3)
-    # @test df[2,9] == DateTime(2015,2,4,10,14)
-    # @test df[4,9] == ExcelReaders.Time(15,2,0)
-    # @test isna(df[4,10])
-    # # TODO Add a test that checks the error code, not just type
-    # @test isa(df[1,11], ExcelErrorCell)
-    # @test isna(df[4,12])
-
-    # good_colnames = [:c1, :c2, :c3, :c4, :c5, :c6, :c7, :c8, :c9, :c10, :c11, :c12, :c13]
-    # df = readxl(DataFrame, f, "Sheet1!C4:O7", header=false, colnames=good_colnames)
-    # @test ncol(df) == 13
-    # @test nrow(df) == 4
-    # @test isa(df[:c1], DataVector{Float64})
-    # @test isa(df[:c2], DataVector{String})
-    # @test isa(df[:c3], DataVector{Bool})
-    # @test isa(df[:c4], DataVector{Any})
-    # @test isa(df[:c5], DataVector{Any})
-    # @test isa(df[:c9], DataVector{Any})
-    # @test isa(df[:c10], DataVector{Any})
-    # @test df[4,:c1] == 2.5
-    # @test df[4,:c2] == "DDDD"
-    # @test df[4,:c3] == true
-    # @test df[1,:c4] == 2.0
-    # @test df[2,:c4] == "EEEEE"
-    # @test df[3,:c4] == false
-    # @test isna(df[3,:c5])
-    # @test df[1,:c6] == 3.
-    # @test isna(df[2,:c6])
-    # @test df[1,:c7] == "FF"
-    # @test isna(df[2,:c7])
-    # @test df[2,:c8] == true
-    # @test isna(df[1,:c8])
-    # @test df[1,:c10] == Date(1965,4,3)
-    # @test df[2,:c9] == DateTime(2015,2,4,10,14)
-    # @test df[4,:c9] == ExcelReaders.Time(15,2,0)
-    # @test isna(df[4,:c10])
-    # # TODO Add a test that checks the error code, not just type
-    # @test isa(df[1,:c11], ExcelErrorCell)
-    # @test isna(df[4,:c12])
-
-    # full_dfs = [readxl(DataFrame, f, "Sheet1!C3:O7", header=true, colnames=good_colnames),
-    #             readxlsheet(DataFrame, f, "Sheet1", header=true, colnames=good_colnames)]
-    # for df in full_dfs
-    #     @test ncol(df) == 13
-    #     @test nrow(df) == 4
-    #     @test isa(df[:c1], DataVector{Float64})
-    #     @test isa(df[:c2], DataVector{String})
-    #     @test isa(df[:c3], DataVector{Bool})
-    #     @test isa(df[:c4], DataVector{Any})
-    #     @test isa(df[:c5], DataVector{Any})
-    #     @test isa(df[:c9], DataVector{Any})
-    #     @test isa(df[:c10], DataVector{Any})
-    #     @test df[4,:c1] == 2.5
-    #     @test df[4,:c2] == "DDDD"
-    #     @test df[4,:c3] == true
-    #     @test df[1,:c4] == 2.0
-    #     @test df[2,:c4] == "EEEEE"
-    #     @test df[3,:c4] == false
-    #     @test isna(df[3,:c5])
-    #     @test df[1,:c6] == 3.
-    #     @test isna(df[2,:c6])
-    #     @test df[1,:c7] == "FF"
-    #     @test isna(df[2,:c7])
-    #     @test df[2,:c8] == true
-    #     @test isna(df[1,:c8])
-    #     @test df[1,:c10] == Date(1965,4,3)
-    #     @test df[2,:c9] == DateTime(2015,2,4,10,14)
-    #     @test df[4,:c9] == ExcelReaders.Time(15,2,0)
-    #     @test isna(df[4,:c10])
-    #     @test isa(df[1,:c11], ExcelErrorCell)
-    #     @test isna(df[4,:c12])
-    # end
-
-    # # Too few colnames
-    # @test_throws ErrorException df = readxl(DataFrame, f, "Sheet1!C3:N7", header=true, colnames=[:c1, :c2, :c3, :c4])
 
     # Test readxlsheet function
     @test_throws ErrorException readxlsheet(f, "Empty Sheet")
@@ -217,5 +115,4 @@ for f in [file, filename]
     end
 end
 
-# Test for constructing DataFrame with empty header cell
-# @test names(readxl(DataFrame, file, "Sheet2!C5:E7")) == [:Col1, :x1, :Col3]
+end
