@@ -11,6 +11,14 @@
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
+**WARNING**: Version v0.9.0 removed all support for [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl)
+from this package. The [ExcelFiles.jl](https://github.com/davidanthoff/ExcelFiles.jl)
+package now provides functionality to read data from an Excel file into
+a ``DataFrame`` (or any other table type), and users are encouraged to use
+that package for tabular data going forward. Version v0.9.0 also no longer
+uses [DataArrays.jl](https://github.com/JuliaStats/DataArrays.jl), but instead
+is based on [DataValues.jl](https://github.com/davidanthoff/DataValues.jl).
+
 ## Installation
 
 Use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
@@ -62,37 +70,3 @@ This will read all content on Sheet1 in the file Filename.xlsx. Eventual blank r
 - ``ncols`` accepts either ``:all`` (default) or a postiive integer. With ``:all``, all columns (except skipped ones) are read. An integer specifies the exact number of columns to be read.
 
 ``readxlsheet`` also accepts an ExcelFile (as obtained from ``openxl``) as its first argument.
-
-## Reading into a DataFrame
-
-To read into a DataFrame:
-
-````julia
-using ExcelReaders
-using DataFrames
-
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4")
-````
-
-This code will use the first row in the range A1:C4 as the column names in the DataFrame.
-
-To read in data without a header row use
-
-````julia
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4", header=false)
-````
-
-This will auto-generate column names. Alternatively you can specify your own names:
-
-````julia
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4",
-            header=false, colnames=[:name1, :name2, :name3])
-````
-
-You can also combine ``header=true`` and a custom ``colnames`` list, in that case the first row in the specified range will just be skipped.
-
-To read the whole sheet into a DataFrame (respective keyword arguments (`header`, `skipstartrows` etc.) should work as expected):
-
-```julia
-df = readxlsheet(DataFrame, "Filename.xlsx", "Sheet1")
-```
