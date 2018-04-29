@@ -21,7 +21,7 @@ A handle to an open Excel file.
 
 You can create an instance of an ``ExcelFile`` by calling ``openxl``.
 """
-type ExcelFile
+mutable struct ExcelFile
     workbook::PyObject
     filename::AbstractString
 end
@@ -34,7 +34,7 @@ An Excel cell that has an Excel error.
 You cannot create ``ExcelErrorCell`` objects, they are returned if a cell in an
 Excel file has an Excel error.
 """
-type ExcelErrorCell
+mutable struct ExcelErrorCell
     errorcode::Int
 end
 
