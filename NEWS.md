@@ -1,3 +1,9 @@
+# ExcelReaders.jl v0.9.0 Release Notes
+* Drop support for DataFrames.
+* Use Dates.Time.
+* Use DataValue for missing values.
+* Fix deprecated syntax.
+
 # ExcelReaders.jl v0.8.2 Release Notes
 * Fix bug in readxlsheet
 
