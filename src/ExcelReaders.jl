@@ -40,14 +40,7 @@ type ExcelErrorCell
     errorcode::Int
 end
 
-# TODO Remove this type once there is a Time type in Dates
-immutable Time
-    hours::Int
-    minutes::Int
-    seconds::Int
-end
-
-function show(io::IO, o::ExcelFile)
+function Base.show(io::IO, o::ExcelFile)
     print(io, "ExcelFile <$(o.filename)>")
 end
 
@@ -222,7 +215,7 @@ function get_cell_value(ws, row, col, wb)
         elseif celltype == xlrd[:XL_CELL_DATE]
             date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
             if date_month==0
-                return Time(date_hour, date_minute, date_sec)
+                return Base.Dates.Time(date_hour, date_minute, date_sec)
             else
                 return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
             end
