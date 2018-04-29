@@ -4,8 +4,6 @@ module ExcelReaders
 
 using PyCall, DataValues
 
-import Base.show
-
 export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
 const xlrd  = PyNULL()
@@ -44,7 +42,7 @@ function Base.show(io::IO, o::ExcelFile)
     print(io, "ExcelFile <$(o.filename)>")
 end
 
-function show(io::IO, o::ExcelErrorCell)
+function Base.show(io::IO, o::ExcelErrorCell)
     print(io, xlrd[:error_text_from_code][o.errorcode])
 end
 
