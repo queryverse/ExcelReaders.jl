@@ -2,9 +2,7 @@ __precompile__()
 
 module ExcelReaders
 
-using PyCall, DataArrays, DataFrames
-
-import Base.show
+using PyCall, DataValues
 
 export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
@@ -23,7 +21,7 @@ A handle to an open Excel file.
 
 You can create an instance of an ``ExcelFile`` by calling ``openxl``.
 """
-type ExcelFile
+mutable struct ExcelFile
     workbook::PyObject
     filename::AbstractString
 end
@@ -36,24 +34,20 @@ An Excel cell that has an Excel error.
 You cannot create ``ExcelErrorCell`` objects, they are returned if a cell in an
 Excel file has an Excel error.
 """
-type ExcelErrorCell
+mutable struct ExcelErrorCell
     errorcode::Int
 end
 
-# TODO Remove this type once there is a Time type in Dates
-immutable Time
-    hours::Int
-    minutes::Int
-    seconds::Int
-end
-
-function show(io::IO, o::ExcelFile)
+function Base.show(io::IO, o::ExcelFile)
     print(io, "ExcelFile <$(o.filename)>")
 end
 
-function show(io::IO, o::ExcelErrorCell)
+function Base.show(io::IO, o::ExcelErrorCell)
     print(io, xlrd[:error_text_from_code][o.errorcode])
 end
+
+Base.promote_rule(::Type{DataValue{T}}, ::Type{ExcelErrorCell}) where {T}= Any
+Base.promote_rule(::Type{ExcelErrorCell}, ::Type{DataValue{T}}) where {T} = Any
 
 """
     openxl(filename)
@@ -219,7 +213,7 @@ function get_cell_value(ws, row, col, wb)
         elseif celltype == xlrd[:XL_CELL_DATE]
             date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
             if date_month==0
-                return Time(date_hour, date_minute, date_sec)
+                return Base.Dates.Time(date_hour, date_minute, date_sec)
             else
                 return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
             end
@@ -241,7 +235,7 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
         return get_cell_value(ws, startrow, startcol, wb)
     else
 
-        data = DataArray(Any, endrow-startrow+1,endcol-startcol+1)
+        data = Array{Any}(endrow-startrow+1,endcol-startcol+1)
 
         for row in startrow:endrow
             for col in startcol:endcol
@@ -251,119 +245,6 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 
         return data
     end
-end
-
-function readxl(::Type{DataFrame}, filename::AbstractString, range::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
-    excelfile = openxl(filename)
-
-    readxl(DataFrame, excelfile, range, header=header, colnames=colnames)
-end
-
-function readxl(::Type{DataFrame}, file::ExcelFile, range::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
-    sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
-
-    readxl_internal(DataFrame, file, sheetname, startrow, startcol, endrow, endcol, header=header, colnames=colnames)
-end
-
-function readxlsheet(::Type{DataFrame}, filename::AbstractString, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
-    excelfile = openxl(filename)
-    readxlsheet(DataFrame, excelfile, sheetindex; args...)
-end
-
-function readxlsheet(::Type{DataFrame}, excelfile::ExcelFile, sheetindex::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
-    sheetname = excelfile.workbook[:sheet_names]()[sheetindex]
-    readxlsheet(DataFrame, excelfile, sheetname; args...)
-end
-
-function readxlsheet(::Type{DataFrame}, filename::AbstractString, sheetname::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
-    excelfile = openxl(filename)
-    readxlsheet(DataFrame, excelfile, sheetname; header=header, colnames=colnames, args...)
-end
-
-function readxlsheet(::Type{DataFrame}, excelfile::ExcelFile, sheetname::AbstractString; header::Bool=true, colnames::Vector{Symbol}=Symbol[], args...)
-    sheet = excelfile.workbook[:sheet_by_name](sheetname)
-    startrow, startcol, endrow, endcol = convert_args_to_row_col(sheet; args...)
-    readxl_internal(DataFrame, excelfile, sheetname, startrow, startcol, endrow, endcol; header=header, colnames=colnames)
-end
-
-function readxl_internal(::Type{DataFrame}, file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int; header::Bool=true, colnames::Vector{Symbol}=Symbol[])
-    data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
-
-    nrow, ncol = size(data)
-
-    if length(colnames)==0
-        if header
-            headervec = data[1, :]
-            NAcol = Bool.(isna.(headervec))
-            headervec[NAcol] = DataFrames.gennames(countnz(NAcol))
-
-            # This somewhat complicated conditional makes sure that column names
-            # that are integer numbers end up without an extra ".0" as their name
-            colnames = [isa(i, AbstractFloat) ? ( modf(i)[1]==0.0 ? Symbol(Int(i)) : Symbol(string(i)) ) : Symbol(i) for i in vec(headervec)]
-        else
-            colnames = DataFrames.gennames(ncol)
-        end
-    elseif length(colnames)!=ncol
-        error("Length of colnames must equal number of columns in selected range")
-    end
-
-    columns = Array{Any}(ncol)
-
-    for i=1:ncol
-        if header
-            vals = data[2:end,i]
-        else
-            vals = data[:,i]
-        end
-
-        # Check whether all non-NA values in this column
-        # are of the same type
-        all_one_type = true
-        found_first_type = false
-        type_of_el = Any
-        NAs_present = false
-        for val=vals
-            if !found_first_type
-                if !isna(val)
-                    type_of_el = typeof(val)
-                    found_first_type = true
-                end
-            elseif !isna(val) && (typeof(val)!=type_of_el)
-                all_one_type = false
-                if NAs_present
-                    break
-                end
-            end
-            if isna(val)
-                NAs_present = true
-                if all_one_type == false
-                    break
-                end
-            end
-        end
-
-        if all_one_type
-            if NAs_present
-                # TODO use the following line instead of the shim once upstream
-                # bug is fixed
-                #columns[i] = convert(DataArray{type_of_el},vals)
-                shim_newarray = DataArray(type_of_el, length(vals))
-                for l=1:length(vals)
-                    shim_newarray[l] = vals[l]
-                end
-                columns[i] = shim_newarray
-            else
-                # TODO Decide whether this should be converted to Array instead of DataArray
-                columns[i] = convert(DataArray{type_of_el},vals)
-            end
-        else
-            columns[i] = vals
-        end
-    end
-
-    df = DataFrame(columns, colnames)
-
-    return df
 end
 
 function readxlnames(f::ExcelFile)

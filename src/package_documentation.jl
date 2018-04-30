@@ -33,7 +33,7 @@ using ExcelReaders
 data = readxl("Filename.xlsx", "Sheet1!A1:C4")
 ````
 
-This will return a ``DataMatrix{Any}`` with all the data in the cell range A1 to
+This will return an array with all the data in the cell range A1 to
 C4 on Sheet1 in the Excel file Filename.xlsx.
 
 If you expect to read multiple ranges from the same Excel file you can get much
@@ -74,40 +74,5 @@ all columns (except skipped ones) are read. An integer specifies the exact numbe
 
 ``readxlsheet`` also accepts an ``ExcelFile`` (as obtained from ``openxl``) as its
 first argument.
-
-## Reading into a DataFrame
-
-To read into a DataFrame:
-
-````julia
-using ExcelReaders, DataFrames
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4")
-````
-
-This code will use the first row in the range A1:C4 as the column names in the
-DataFrame.
-
-To read in data without a header row use
-
-````julia
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4", header=false)
-````
-
-This will auto-generate column names. Alternatively you can specify your own names:
-
-````julia
-df = readxl(DataFrame, "Filename.xlsx", "Sheet1!A1:C4",
-            header=false, colnames=[:name1, :name2, :name3])
-````
-
-You can also combine ``header=true`` and a custom ``colnames`` list, in that
-case the first row in the specified range will just be skipped.
-
-To read the whole sheet into a DataFrame (respective keyword arguments (header, skipstartrows etc.)
-should work as expected):
-
-````julia
-df = readxlsheet(DataFrame, "Filename.xlsx", "Sheet1")
-````
 """
 tutorial = nothing
