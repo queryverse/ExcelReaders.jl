@@ -1,7 +1,8 @@
 using ExcelReaders
-using Base.Test
+using Dates
 using PyCall
 using DataValues
+using Test
 
 @testset "ExcelReaders" begin
 
@@ -9,7 +10,7 @@ using DataValues
 @test_throws PyCall.PyError openxl("FileThatDoesNotExist.xlsx")
 @test_throws PyCall.PyError openxl("runtests.jl")
 
-filename = normpath(Pkg.dir("ExcelReaders"),"test", "TestData.xlsx")
+filename = normpath(@__DIR__, "TestData.xlsx")
 file = openxl(filename)
 @test file.filename == "TestData.xlsx"
 
@@ -39,7 +40,7 @@ for f in [file, filename]
     @test data[2,9] == Date(2015,3,3)
     @test data[3,9] == DateTime(2015,2,4,10,14)
     @test data[4,9] == DateTime(1988,4,9,0,0)
-    @test data[5,9] == Dates.Time(15,2,0)
+    @test data[5,9] == Time(15,2,0)
     @test data[3,10] == DateTime(1950,8,9,18,40)
     @test DataValues.isna(data[5,10])
     @test isa(data[2,11], ExcelErrorCell)
@@ -67,7 +68,7 @@ for f in [file, filename]
         @test data[2,1] == 1.
         @test data[5,2] == "CCC"
         @test data[3,3] == false
-        @test data[6,6] == Dates.Time(15,2,00)
+        @test data[6,6] == Time(15,2,00)
         @test DataValues.isna(data[4,3])
         @test DataValues.isna(data[4,6])
 
@@ -76,7 +77,7 @@ for f in [file, filename]
         @test data[2,1] == 1.
         @test data[5,2] == "CCC"
         @test data[3,3] == false
-        @test data[6,6] == Dates.Time(15,2,00)
+        @test data[6,6] == Time(15,2,00)
         @test DataValues.isna(data[4,3])
         @test DataValues.isna(data[4,6])
 
@@ -85,7 +86,7 @@ for f in [file, filename]
         @test data[2+7,1+3] == 1.
         @test data[5+7,2+3] == "CCC"
         @test data[3+7,3+3] == false
-        @test data[6+7,6+3] == Dates.Time(15,2,00)
+        @test data[6+7,6+3] == Time(15,2,00)
         @test DataValues.isna(data[4+7,3+3])
         @test DataValues.isna(data[4+7,6+3])
 
@@ -94,7 +95,7 @@ for f in [file, filename]
         @test data[2+7,1] == 1.
         @test data[5+7,2] == "CCC"
         @test data[3+7,3] == false
-        @test data[6+7,6] == Dates.Time(15,2,00)
+        @test data[6+7,6] == Time(15,2,00)
         @test DataValues.isna(data[4+7,3])
         @test DataValues.isna(data[4+7,6])
 
@@ -103,7 +104,7 @@ for f in [file, filename]
         @test data[2,1+3] == 1.
         @test data[5,2+3] == "CCC"
         @test data[3,3+3] == false
-        @test data[6,6+3] == Dates.Time(15,2,00)
+        @test data[6,6+3] == Time(15,2,00)
         @test DataValues.isna(data[4,3+3])
         @test DataValues.isna(data[4,6+3])
 
@@ -112,7 +113,7 @@ for f in [file, filename]
         @test data[2+6,1+2] == 1.
         @test data[5+6,2+2] == "CCC"
         @test data[3+6,3+2] == false
-        @test_throws BoundsError data[6+6,6+2] == Dates.Time(15,2,00)
+        @test_throws BoundsError data[6+6,6+2] == Time(15,2,00)
         @test DataValues.isna(data[4+6,2+2])
     end
 end
