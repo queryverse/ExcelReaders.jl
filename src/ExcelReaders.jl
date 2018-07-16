@@ -2,7 +2,7 @@ __precompile__()
 
 module ExcelReaders
 
-using PyCall, DataValues
+using PyCall, DataValues, Dates
 
 export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
@@ -213,7 +213,7 @@ function get_cell_value(ws, row, col, wb)
         elseif celltype == xlrd[:XL_CELL_DATE]
             date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
             if date_month==0
-                return Base.Dates.Time(date_hour, date_minute, date_sec)
+                return Time(date_hour, date_minute, date_sec)
             else
                 return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
             end
@@ -235,7 +235,7 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
         return get_cell_value(ws, startrow, startcol, wb)
     else
 
-        data = Array{Any}(endrow-startrow+1,endcol-startcol+1)
+        data = Array{Any}(undef,endrow-startrow+1,endcol-startcol+1)
 
         for row in startrow:endrow
             for col in startcol:endcol
