@@ -1,5 +1,3 @@
-__precompile__()
-
 module ExcelReaders
 
 using PyCall, DataValues, Dates
