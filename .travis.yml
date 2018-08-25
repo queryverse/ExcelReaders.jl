@@ -16,7 +16,7 @@ branches:
 matrix:
   allow_failures:
   - julia: nightly
-script:
-  - julia -e 'ENV["PYTHON"]=""; Pkg.build(); Pkg.test(; coverage=true)'  
+env:
+  - PYTHON=""
 after_success:
   - julia -e 'cd(Pkg.dir("IteratorInterfaceExtensions")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
