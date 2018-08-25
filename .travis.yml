@@ -1,9 +1,10 @@
 language: julia
 os:
-  - osx
   - linux
+  - osx
 julia:
   - 0.7
+  - 1.0
   - nightly
 notifications:
   email: false
@@ -11,12 +12,11 @@ branches:
   only:
   - master
   - /release-.*/
-before_install:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-script:
-  - julia -e 'Pkg.clone(pwd())'
-  - julia -e 'ENV["PYTHON"]=""; Pkg.build("ExcelReaders")'
-  - julia --check-bounds=yes -e 'Pkg.test("ExcelReaders", coverage=true)'
+  - /v(\d+)\.(\d+)\.(\d+)/   
+matrix:
+  allow_failures:
+  - julia: nightly
+env:
+  - PYTHON=""
 after_success:
-  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
-  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
+  - julia -e 'cd(Pkg.dir("IteratorInterfaceExtensions")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
