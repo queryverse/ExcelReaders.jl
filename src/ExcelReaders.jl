@@ -225,7 +225,7 @@ function get_cell_value(ws, row, col, wb)
     end
 end
 
-function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Int, startcol::Int, endrow::Int, endcol::Int)
+function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Integer, startcol::Integer, endrow::Integer, endcol::Integer)
     wb = file.workbook
     ws = wb[:sheet_by_name](sheetname)
 
