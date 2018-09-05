@@ -1,3 +1,6 @@
+# ExcelReaders.jl v0.10.2 Release Notes
+* Remove a faulty promotion rule
+
 # ExcelReaders.jl v0.10.1 Release Notes
 * Fix remaining julia 0.7/1.0 compat issues
 
