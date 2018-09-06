@@ -19,4 +19,4 @@ matrix:
 env:
   - PYTHON=""
 after_success:
-  - julia -e 'cd(Pkg.dir("IteratorInterfaceExtensions")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
