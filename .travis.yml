@@ -5,6 +5,7 @@ os:
 julia:
   - 0.7
   - 1.0
+  - 1.1
   - nightly
 notifications:
   email: false
@@ -19,4 +20,4 @@ matrix:
 env:
   - PYTHON=""
 after_success:
-  - julia -e 'cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+  - julia -e 'using Pkg; cd(Pkg.dir("ExcelReaders")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
