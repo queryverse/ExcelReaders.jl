@@ -253,8 +253,8 @@ function readxlrange(f::ExcelFile, range::AbstractString)
     end
 
     formula_text = name[1][:formula_text]
-    formula_text = replace(formula_text, "\$", "")
-    formula_text = replace(formula_text, "'", "")
+    formula_text = replace(formula_text, "\$"=>"")
+    formula_text = replace(formula_text, "'"=>"")
 
     return readxl(f, formula_text)
 end
