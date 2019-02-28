@@ -41,7 +41,7 @@ function Base.show(io::IO, o::ExcelFile)
 end
 
 function Base.show(io::IO, o::ExcelErrorCell)
-    print(io, xlrd[:error_text_from_code][o.errorcode])
+    print(io, xlrd.error_text_from_code[o.errorcode])
 end
 
 """
@@ -61,7 +61,7 @@ data = readxl(f, "Sheet1!A1:C4")
 ````
 """
 function openxl(filename::AbstractString)
-    wb = xlrd[:open_workbook](filename)
+    wb = xlrd.open_workbook(filename)
     return ExcelFile(wb, basename(filename))
 end
 
@@ -71,7 +71,7 @@ function readxlsheet(filename::AbstractString, sheetindex::Int; args...)
 end
 
 function readxlsheet(file::ExcelFile, sheetindex::Int; args...)
-    sheetnames = file.workbook[:sheet_names]()
+    sheetnames = file.workbook.sheet_names()
     return readxlsheet(file, sheetnames[sheetindex]; args...)
 end
 
@@ -81,7 +81,7 @@ function readxlsheet(filename::AbstractString, sheetname::AbstractString; args..
 end
 
 function readxlsheet(file::ExcelFile, sheetname::AbstractString; args...)
-    sheet = file.workbook[:sheet_by_name](sheetname)
+    sheet = file.workbook.sheet_by_name(sheetname)
     startrow, startcol, endrow, endcol = convert_args_to_row_col(sheet; args...)
 
     data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
@@ -99,10 +99,10 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
     isa(nrows, Int) && nrows<0 && error("nrows should be :all or positive")
     isa(ncols, Symbol) && ncols!=:all && error("Only :all or an integer is a valid argument for ncols")
     isa(ncols, Int) && ncols<0 && error("ncols should be :all or positive")
-    sheet_rows = sheet[:nrows]
-    sheet_cols = sheet[:ncols]
+    sheet_rows = sheet.nrows
+    sheet_cols = sheet.ncols
 
-    cell_value = sheet[:cell_value]
+    cell_value = sheet.cell_value
 
     if skipstartrows==:blanks
         startrow = -1
@@ -196,25 +196,25 @@ function readxl(file::ExcelFile, range::AbstractString)
 end
 
 function get_cell_value(ws, row, col, wb)
-    cellval = ws[:cell_value](row-1,col-1)
+    cellval = ws.cell_value(row-1,col-1)
     if cellval==""
         return NA
     else
-        celltype = ws[:cell_type](row-1,col-1)
-        if celltype == xlrd[:XL_CELL_TEXT]
+        celltype = ws.cell_type(row-1,col-1)
+        if celltype == xlrd.XL_CELL_TEXT
             return convert(String, cellval)
-        elseif celltype == xlrd[:XL_CELL_NUMBER]
+        elseif celltype == xlrd.XL_CELL_NUMBER
             return convert(Float64, cellval)
-        elseif celltype == xlrd[:XL_CELL_DATE]
-            date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd[:xldate_as_tuple](cellval, wb[:datemode])
+        elseif celltype == xlrd.XL_CELL_DATE
+            date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd.xldate_as_tuple(cellval, wb.datemode)
             if date_month==0
                 return Time(date_hour, date_minute, date_sec)
             else
                 return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
             end
-        elseif celltype == xlrd[:XL_CELL_BOOLEAN]
+        elseif celltype == xlrd.XL_CELL_BOOLEAN
             return convert(Bool, cellval)
-        elseif celltype == xlrd[:XL_CELL_ERROR]
+        elseif celltype == xlrd.XL_CELL_ERROR
             return ExcelErrorCell(cellval)
         else
             error("Unknown cell type")
@@ -224,7 +224,7 @@ end
 
 function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Integer, startcol::Integer, endrow::Integer, endcol::Integer)
     wb = file.workbook
-    ws = wb[:sheet_by_name](sheetname)
+    ws = wb.sheet_by_name(sheetname)
 
     if startrow==endrow && startcol==endcol
         return get_cell_value(ws, startrow, startcol, wb)
@@ -243,16 +243,16 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 end
 
 function readxlnames(f::ExcelFile)
-    return [lowercase(i[:name]) for i in f.workbook[:name_obj_list] if i[:hidden]==0]
+    return [lowercase(i.name) for i in f.workbook.name_obj_list if i.hidden==0]
 end
 
 function readxlrange(f::ExcelFile, range::AbstractString)
-    name = f.workbook[:name_map][lowercase(range)]
+    name = f.workbook.name_map[lowercase(range)]
     if length(name)!=1
         error("More than one reference per name, this case is not yet handled by ExcelReaders.")
     end
 
-    formula_text = name[1][:formula_text]
+    formula_text = name[1].formula_text
     formula_text = replace(formula_text, "\$"=>"")
     formula_text = replace(formula_text, "'"=>"")
 

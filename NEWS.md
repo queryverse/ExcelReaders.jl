@@ -1,3 +1,6 @@
+# ExcelReaders.jl v0.11.0 Release Notes
+* Update to PyCall.jl 1.90.0
+
 # ExcelReaders.jl v0.10.3 Release Notes
 * Fix julia 1.0 compat bug
 
