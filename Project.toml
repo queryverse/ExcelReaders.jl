@@ -1,0 +1,19 @@
+name = "ExcelReaders"
+uuid = "c04bee98-12a5-510c-87df-2a230cb6e075"
+version = "1.0.0-DEV"
+
+[deps]
+DataValues = "e7dc6d0d-1eca-5fa6-8ad6-5aecde8b7ea5"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
+
+[compat]
+DataValues = "≥ 0.4.4"
+PyCall = "1.90.0"
+julia = "1"
