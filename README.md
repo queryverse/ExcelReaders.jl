@@ -4,10 +4,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/v7b60gfrg65qkqt5/branch/master?svg=true)](https://ci.appveyor.com/project/queryverse/excelreaders-jl/branch/master)
 [![Coverage Status](https://coveralls.io/repos/queryverse/ExcelReaders.jl/badge.svg)](https://coveralls.io/r/queryverse/ExcelReaders.jl)
 [![codecov](https://codecov.io/gh/queryverse/ExcelReaders.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/queryverse/ExcelReaders.jl)
-[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.3.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.3)
-[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.4.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.4)
-[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.5.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.5)
-[![ExcelReaders](http://pkg.julialang.org/badges/ExcelReaders_0.6.svg)](http://pkg.julialang.org/?pkg=ExcelReaders&ver=0.5)
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
