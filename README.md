@@ -19,7 +19,7 @@ is based on [DataValues.jl](https://github.com/queryverse/DataValues.jl).
 
 Use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
 
-The package uses the Python xlrd library. If either Python or the xlrd package are not installed on your system, the package will use the [conda.jl](https://github.com/Luthaf/Conda.jl) package to install all necessary dependencies automatically.
+The package uses the Python xlrd library. If either Python or the xlrd package are not installed on your Mac or Windows system, the package will use the [Conda.jl](https://github.com/Luthaf/Conda.jl) package to install all necessary dependencies automatically. If you are on another system you can either install Python and xlrd yourself or instruct PyCall to use Conda.jl to manage its own python install (`ENV["PYTHON"]=""; Pkg.build("PyCall")` and restart Julia).
 
 ## Alternatives
 
