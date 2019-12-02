@@ -90,30 +90,30 @@ function readxlsheet(file::ExcelFile, sheetname::AbstractString; args...)
 end
 
 # Function converts "relative" range like skip rows/cols and size of range to "absolute" from row/col to row/col
-function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
-    isa(skipstartrows, Symbol) && skipstartrows!=:blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
-    isa(skipstartrows, Int) && skipstartrows<0 && error("Can't skip a negative number of rows")
-    isa(skipstartcols, Symbol) && skipstartcols!=:blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
-    isa(skipstartcols, Int) && skipstartcols<0 && error("Can't skip a negative number of columns")
-    isa(nrows, Symbol) && nrows!=:all && error("Only :all or an integer is a valid argument for nrows")
-    isa(nrows, Int) && nrows<0 && error("nrows should be :all or positive")
-    isa(ncols, Symbol) && ncols!=:all && error("Only :all or an integer is a valid argument for ncols")
-    isa(ncols, Int) && ncols<0 && error("ncols should be :all or positive")
+function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol} = :blanks, skipstartcols::Union{Int,Symbol} = :blanks, nrows::Union{Int,Symbol} = :all, ncols::Union{Int,Symbol} = :all)
+    isa(skipstartrows, Symbol) && skipstartrows != :blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
+    isa(skipstartrows, Int) && skipstartrows < 0 && error("Can't skip a negative number of rows")
+    isa(skipstartcols, Symbol) && skipstartcols != :blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
+    isa(skipstartcols, Int) && skipstartcols < 0 && error("Can't skip a negative number of columns")
+    isa(nrows, Symbol) && nrows != :all && error("Only :all or an integer is a valid argument for nrows")
+    isa(nrows, Int) && nrows < 0 && error("nrows should be :all or positive")
+    isa(ncols, Symbol) && ncols != :all && error("Only :all or an integer is a valid argument for ncols")
+    isa(ncols, Int) && ncols < 0 && error("ncols should be :all or positive")
     sheet_rows = sheet.nrows
     sheet_cols = sheet.ncols
 
     cell_value = sheet.cell_value
 
-    if skipstartrows==:blanks
+    if skipstartrows == :blanks
         startrow = -1
         for cur_row in 1:sheet_rows, cur_col in 1:sheet_cols
-            cellval = cell_value(cur_row-1,cur_col-1)
-            if cellval!=""
+            cellval = cell_value(cur_row - 1, cur_col - 1)
+            if cellval != ""
                 startrow = cur_row
                 break
             end
         end
-        if startrow==-1
+        if startrow == -1
             error("Sheet has no data")
         else
             skipstartrows = startrow - 1
@@ -122,16 +122,16 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
         startrow = 1 + skipstartrows
     end
 
-    if skipstartcols==:blanks
+    if skipstartcols == :blanks
         startcol = -1
         for cur_col in 1:sheet_cols, cur_row in 1:sheet_rows
-            cellval = cell_value(cur_row-1,cur_col-1)
-            if cellval!=""
+            cellval = cell_value(cur_row - 1, cur_col - 1)
+            if cellval != ""
                 startcol = cur_col
                 break
             end
         end
-        if startcol==-1
+        if startcol == -1
             error("Sheet has no data")
         else
             skipstartcols = startcol - 1
@@ -140,13 +140,13 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
         startcol = 1 + skipstartcols
     end
 
-    if nrows==:all
+    if nrows == :all
         endrow = sheet_rows
     else
         endrow = nrows + skipstartrows
     end
 
-    if ncols==:all
+    if ncols == :all
         endcol = sheet_cols
     else
         endcol = ncols + skipstartcols
@@ -156,8 +156,8 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol}=:blanks,
 end
 
 function colnum(col::AbstractString)
-    cl=uppercase(col)
-    r=0
+    cl = uppercase(col)
+    r = 0
     for c in cl
         r = (r * 26) + (c - 'A' + 1)
     end
@@ -165,20 +165,20 @@ function colnum(col::AbstractString)
 end
 
 function convert_ref_to_sheet_row_col(range::AbstractString)
-    r=r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*)(:([A-Za-z]*)(\d*))?"
-    m=match(r, range)
-    m==nothing && error("Invalid Excel range specified.")
-    sheetname=String(m.captures[1])
-    startrow=parse(Int,m.captures[3])
-    startcol=colnum(m.captures[2])
-    if m.captures[4]==nothing
-        endrow=startrow
-        endcol=startcol
+    r = r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*)(:([A-Za-z]*)(\d*))?"
+    m = match(r, range)
+    m == nothing && error("Invalid Excel range specified.")
+    sheetname = String(m.captures[1])
+    startrow = parse(Int, m.captures[3])
+    startcol = colnum(m.captures[2])
+    if m.captures[4] == nothing
+        endrow = startrow
+        endcol = startcol
     else
-        endrow=parse(Int,m.captures[6])
-        endcol=colnum(m.captures[5])
+        endrow = parse(Int, m.captures[6])
+        endcol = colnum(m.captures[5])
     end
-    if (startrow > endrow ) || (startcol>endcol)
+    if (startrow > endrow ) || (startcol > endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
     return sheetname, startrow, startcol, endrow, endcol
@@ -196,18 +196,18 @@ function readxl(file::ExcelFile, range::AbstractString)
 end
 
 function get_cell_value(ws, row, col, wb)
-    cellval = ws.cell_value(row-1,col-1)
-    if cellval==""
+    cellval = ws.cell_value(row - 1, col - 1)
+    if cellval == ""
         return NA
     else
-        celltype = ws.cell_type(row-1,col-1)
+        celltype = ws.cell_type(row - 1, col - 1)
         if celltype == xlrd.XL_CELL_TEXT
             return convert(String, cellval)
         elseif celltype == xlrd.XL_CELL_NUMBER
             return convert(Float64, cellval)
         elseif celltype == xlrd.XL_CELL_DATE
-            date_year,date_month,date_day,date_hour,date_minute,date_sec = xlrd.xldate_as_tuple(cellval, wb.datemode)
-            if date_month==0
+            date_year, date_month, date_day, date_hour, date_minute, date_sec = xlrd.xldate_as_tuple(cellval, wb.datemode)
+            if date_month == 0
                 return Time(date_hour, date_minute, date_sec)
             else
                 return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
@@ -226,15 +226,15 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
     wb = file.workbook
     ws = wb.sheet_by_name(sheetname)
 
-    if startrow==endrow && startcol==endcol
+    if startrow == endrow && startcol == endcol
         return get_cell_value(ws, startrow, startcol, wb)
     else
 
-        data = Array{Any}(undef,endrow-startrow+1,endcol-startcol+1)
+        data = Array{Any}(undef, endrow - startrow + 1, endcol - startcol + 1)
 
         for row in startrow:endrow
             for col in startcol:endcol
-                data[row-startrow+1, col-startcol+1] = get_cell_value(ws, row, col, wb)
+                data[row - startrow + 1, col - startcol + 1] = get_cell_value(ws, row, col, wb)
             end
         end
 
@@ -243,18 +243,18 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 end
 
 function readxlnames(f::ExcelFile)
-    return [lowercase(i.name) for i in f.workbook.name_obj_list if i.hidden==0]
+    return [lowercase(i.name) for i in f.workbook.name_obj_list if i.hidden == 0]
 end
 
 function readxlrange(f::ExcelFile, range::AbstractString)
     name = f.workbook.name_map[lowercase(range)]
-    if length(name)!=1
+    if length(name) != 1
         error("More than one reference per name, this case is not yet handled by ExcelReaders.")
     end
 
     formula_text = name[1].formula_text
-    formula_text = replace(formula_text, "\$"=>"")
-    formula_text = replace(formula_text, "'"=>"")
+    formula_text = replace(formula_text, "\$" => "")
+    formula_text = replace(formula_text, "'" => "")
 
     return readxl(f, formula_text)
 end
