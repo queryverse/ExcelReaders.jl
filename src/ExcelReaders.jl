@@ -56,7 +56,7 @@ file only once with ``openxl``.
 
 # Example
 ````julia
-f = openxl("filename.xlsx")
+f = openxl("filename.xls")
 data = readxl(f, "Sheet1!A1:C4")
 ````
 """
