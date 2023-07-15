@@ -30,18 +30,18 @@ The most basic usage is this:
 
 ````julia
 using ExcelReaders
-data = readxl("Filename.xlsx", "Sheet1!A1:C4")
+data = readxl("Filename.xls", "Sheet1!A1:C4")
 ````
 
 This will return an array with all the data in the cell range A1 to
-C4 on Sheet1 in the Excel file Filename.xlsx.
+C4 on Sheet1 in the Excel file Filename.xls.
 
 If you expect to read multiple ranges from the same Excel file you can get much
 better performance by opening the Excel file only once:
 
 ````julia
 using ExcelReaders
-f = openxl("Filename.xlsx")
+f = openxl("Filename.xls")
 data1 = readxl(f, "Sheet1!A1:C4")
 data2 = readxl(f, "Sheet2!B4:F10")
 ````
@@ -53,10 +53,10 @@ specify precise range information. The most basic usage is
 
 ````julia
 using ExcelReaders
-data = readxlsheet("Filename.xlsx", "Sheet1")
+data = readxlsheet("Filename.xls", "Sheet1")
 ````
 
-This will read all content on Sheet1 in the file Filename.xlsx. Eventual blank
+This will read all content on Sheet1 in the file Filename.xls. Eventual blank
 rows and columns at the top and left are skipped. ``readxlsheet`` takes a number
 of optional keyword arguments:
 

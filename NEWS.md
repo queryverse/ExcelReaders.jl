@@ -1,6 +1,7 @@
-# ExcelReaders.jl v1.0.0 Release Notes
+# ExcelReaders.jl v0.12.0 Release Notes
 * Drop julia 0.7 support
 * Migrate to Project.toml
+* Drop support for modern Excel files, this package now only supports legacy xls files
 
 # ExcelReaders.jl v0.11.0 Release Notes
 * Update to PyCall.jl 1.90.0

@@ -7,13 +7,9 @@
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
-**WARNING**: Version v0.9.0 removed all support for [DataFrames.jl](https://github.com/JuliaData/DataFrames.jl)
-from this package. The [ExcelFiles.jl](https://github.com/queryverse/ExcelFiles.jl)
-package now provides functionality to read data from an Excel file into
-a ``DataFrame`` (or any other table type), and users are encouraged to use
-that package for tabular data going forward. Version v0.9.0 also no longer
-uses [DataArrays.jl](https://github.com/JuliaStats/DataArrays.jl), but instead
-is based on [DataValues.jl](https://github.com/queryverse/DataValues.jl).
+**WARNING**: Version v0.12 removed support for modern Excel files. This package is now _only_ supporting legacy xls files. The reason for this is that the underlying Python package made that move a couple of years ago as well.
+
+The [XLSX.jl](https://github.com/felipenoris/XLSX.jl) provides excellent support for modern Excel files.
 
 ## Installation
 
@@ -22,6 +18,8 @@ Use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its depende
 The package uses the Python xlrd library. If either Python or the xlrd package are not installed on your Mac or Windows system, the package will use the [Conda.jl](https://github.com/Luthaf/Conda.jl) package to install all necessary dependencies automatically. If you are on another system you can either install Python and xlrd yourself or instruct PyCall to use Conda.jl to manage its own python install (`ENV["PYTHON"]=""; Pkg.build("PyCall")` and restart Julia).
 
 ## Alternatives
+
+The [XLSX.jl](https://github.com/felipenoris/XLSX.jl) provides excellent support for modern Excel files.
 
 The [Taro](https://github.com/aviks/Taro.jl) package also provides Excel file reading functionality. The main difference between the two packages (in terms of Excel functionality) is that ExcelReaders uses the Python package [xlrd](https://github.com/python-excel/xlrd) for its processing, whereas Taro uses the Java packages Apache [Tika](http://tika.apache.org/) and Apache [POI](http://poi.apache.org/).
 
@@ -32,17 +30,17 @@ The most basic usage is this:
 ````julia
 using ExcelReaders
 
-data = readxl("Filename.xlsx", "Sheet1!A1:C4")
+data = readxl("Filename.xls", "Sheet1!A1:C4")
 ````
 
-This will return an array with all the data in the cell range A1 to C4 on Sheet1 in the Excel file Filename.xlsx.
+This will return an array with all the data in the cell range A1 to C4 on Sheet1 in the Excel file Filename.xls.
 
 If you expect to read multiple ranges from the same Excel file you can get much better performance by opening the Excel file only once:
 
 ````julia
 using ExcelReaders
 
-f = openxl("Filename.xlsx")
+f = openxl("Filename.xls")
 
 data1 = readxl(f, "Sheet1!A1:C4")
 data2 = readxl(f, "Sheet2!B4:F10")
@@ -55,10 +53,10 @@ The ``readxlsheet`` function reads complete Excel sheets, without a need to spec
 ````julia
 using ExcelReaders
 
-data = readxlsheet("Filename.xlsx", "Sheet1")
+data = readxlsheet("Filename.xls", "Sheet1")
 ````
 
-This will read all content on Sheet1 in the file Filename.xlsx. Eventual blank rows and columns at the top and left are skipped. ``readxlsheet`` takes a number of optional keyword arguments:
+This will read all content on Sheet1 in the file Filename.xls. Eventual blank rows and columns at the top and left are skipped. ``readxlsheet`` takes a number of optional keyword arguments:
 
 - ``skipstartrows`` accepts either ``:blanks`` (default) or a positive integer. With ``:blank`` any empty initial rows are skipped. An integer skips as many rows as specified.
 - ``skipstartcols`` accepts either ``:blanks`` (default) or a positive integer. With ``:blank`` any empty initial columns are skipped. An integer skips as many columns as specified.
