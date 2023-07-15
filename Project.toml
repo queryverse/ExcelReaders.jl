@@ -14,6 +14,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 test = ["Test"]
 
 [compat]
-DataValues = "≥ 0.4.4"
-PyCall = "1.90.0"
+DataValues = "0.4.4"
+PyCall = "1.90"
 julia = "1"
