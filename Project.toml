@@ -13,10 +13,10 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-Conda = "1 - 1.8.0"
 julia = "1.6"
+Conda = "1.9"
 DataValues = "0.4.4"
-PyCall = "1.90"
+PyCall = "1.96"
 
 [targets]
 test = ["Test", "TestItemRunner"]
