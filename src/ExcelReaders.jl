@@ -4,7 +4,7 @@ using PyCall, DataValues, Dates
 
 export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
-const xlrd  = PyNULL()
+const xlrd = PyNULL()
 
 include("package_documentation.jl")
 
@@ -90,7 +90,7 @@ function readxlsheet(file::ExcelFile, sheetname::AbstractString; args...)
 end
 
 # Function converts "relative" range like skip rows/cols and size of range to "absolute" from row/col to row/col
-function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol} = :blanks, skipstartcols::Union{Int,Symbol} = :blanks, nrows::Union{Int,Symbol} = :all, ncols::Union{Int,Symbol} = :all)
+function convert_args_to_row_col(sheet; skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
     isa(skipstartrows, Symbol) && skipstartrows != :blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
     isa(skipstartrows, Int) && skipstartrows < 0 && error("Can't skip a negative number of rows")
     isa(skipstartcols, Symbol) && skipstartcols != :blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
@@ -178,7 +178,7 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
         endrow = parse(Int, m.captures[6])
         endcol = colnum(m.captures[5])
     end
-    if (startrow > endrow ) || (startcol > endcol)
+    if (startrow > endrow) || (startcol > endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
     return sheetname, startrow, startcol, endrow, endcol
@@ -234,7 +234,7 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 
         for row in startrow:endrow
             for col in startcol:endcol
-                data[row - startrow + 1, col - startcol + 1] = get_cell_value(ws, row, col, wb)
+                data[row-startrow+1, col-startcol+1] = get_cell_value(ws, row, col, wb)
             end
         end
 
