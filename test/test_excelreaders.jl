@@ -1,16 +1,13 @@
 @testitem "ExcelReaders" begin
-    using Dates, PyCall, DataValues
+    using Dates, DataValues
 
-# TODO Throw julia specific exceptions for these errors
-    @test_throws PyCall.PyError openxl("FileThatDoesNotExist.xls")
-    @test_throws PyCall.PyError openxl("runtests.jl")
+    @test_throws ErrorException openxl("FileThatDoesNotExist.xls")
+    @test_throws ErrorException openxl(normpath(@__DIR__, "runtests.jl"))
 
     filename = normpath(@__DIR__, "TestData.xls")
     file = openxl(filename)
     @test file.filename == "TestData.xls"
 
-    buffer = IOBuffer()
-    
     @test sprint(show, file) == "ExcelFile <TestData.xls>"
 
     for (k, v) in Dict(0 => "#NULL!", 7 => "#DIV/0!", 23 => "#REF!", 42 => "#N/A", 29 => "#NAME?", 36 => "#NUM!", 15 => "#VALUE!")
@@ -111,4 +108,86 @@
         end
     end
 
+end
+
+@testitem "ExcelReaders xlsx backend" begin
+    using Dates, DataValues
+
+    filename = normpath(@__DIR__, "TestData.xlsx")
+
+    file = openxl(filename)
+    @test file.filename == "TestData.xlsx"
+    @test sprint(show, file) == "ExcelFile <TestData.xlsx>"
+
+    # TestData.xlsx holds the same content as TestData.xls, so the very same
+    # assertions must hold for both backends.
+    for f in [file, filename]
+        @test_throws ErrorException readxl(f, "Sheet1!C4:G3")
+        @test_throws ErrorException readxl(f, "Sheet1!G2:B5")
+        @test_throws ErrorException readxl(f, "Sheet1!G5:B2")
+
+        data = readxl(f, "Sheet1!C3:N7")
+        @test size(data) == (5, 12)
+        @test data[4,1] == 2.0
+        @test data[2,2] == "A"
+        @test data[2,3] == true
+        @test DataValues.isna(data[4,5])
+        @test data[2,9] == Date(2015, 3, 3)
+        @test data[2,9] isa DateTime            # backend-independent type vocabulary
+        @test data[3,9] == DateTime(2015, 2, 4, 10, 14)
+        @test data[4,9] == DateTime(1988, 4, 9, 0, 0)
+        @test data[5,9] == Time(15, 2, 0)
+        @test data[3,10] == DateTime(1950, 8, 9, 18, 40)
+        @test DataValues.isna(data[5,10])
+        @test isa(data[2,11], ExcelErrorCell)
+        @test isa(data[3,11], ExcelErrorCell)
+        @test isa(data[4,12], ExcelErrorCell)
+        @test DataValues.isna(data[5,12])
+
+        # single cell read
+        @test readxl(f, "Sheet1!C4") == 1.0
+
+        @test_throws ErrorException readxlsheet(f, "Empty Sheet")
+
+        data = readxlsheet(f, "Second Sheet")
+        @test size(data) == (6, 6)
+        @test data[2,1] == 1.
+        @test data[5,2] == "CCC"
+        @test data[3,3] == false
+        @test data[6,6] == Time(15, 2, 00)
+        @test DataValues.isna(data[4,3])
+        @test DataValues.isna(data[4,6])
+    end
+end
+
+@testitem "Cross-backend parity" begin
+    using Dates, DataValues
+
+    # The two test files hold the same content in the two file formats, so
+    # every cell in the shared range must come back identical from both
+    # backends.
+    xls = openxl(normpath(@__DIR__, "TestData.xls"))
+    xlsx = openxl(normpath(@__DIR__, "TestData.xlsx"))
+
+    function compare_cells(data_xls, data_xlsx)
+        @test size(data_xls) == size(data_xlsx)
+        for i in eachindex(data_xls)
+            a, b = data_xls[i], data_xlsx[i]
+            if a isa ExcelErrorCell
+                @test b isa ExcelErrorCell
+                @test a.errorcode == b.errorcode
+            elseif a isa DataValue
+                @test b isa DataValue && DataValues.isna(b)
+            else
+                @test typeof(a) == typeof(b)
+                @test a == b
+            end
+        end
+    end
+
+    compare_cells(readxl(xls, "Sheet1!C3:N7"), readxl(xlsx, "Sheet1!C3:N7"))
+
+    for sheet in ["Second Sheet", 2]
+        compare_cells(readxlsheet(xls, sheet), readxlsheet(xlsx, sheet))
+    end
 end

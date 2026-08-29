@@ -1,27 +1,20 @@
 # ExcelReaders
 
-[![Build Status](https://travis-ci.org/queryverse/ExcelReaders.jl.svg?branch=master)](https://travis-ci.org/queryverse/ExcelReaders.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/v7b60gfrg65qkqt5/branch/master?svg=true)](https://ci.appveyor.com/project/queryverse/excelreaders-jl/branch/master)
-[![Coverage Status](https://coveralls.io/repos/queryverse/ExcelReaders.jl/badge.svg)](https://coveralls.io/r/queryverse/ExcelReaders.jl)
-[![codecov](https://codecov.io/gh/queryverse/ExcelReaders.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/queryverse/ExcelReaders.jl)
+[![Build Status](https://github.com/queryverse/ExcelReaders.jl/actions/workflows/juliaci.yml/badge.svg?branch=main)](https://github.com/queryverse/ExcelReaders.jl/actions/workflows/juliaci.yml)
 
 ExcelReaders is a package that provides functionality to read Excel files.
 
-**WARNING**: Version v0.12 removed support for modern Excel files. This package is now _only_ supporting legacy xls files. The reason for this is that the underlying Python package made that move a couple of years ago as well.
-
-The [XLSX.jl](https://github.com/felipenoris/XLSX.jl) provides excellent support for modern Excel files.
+Both legacy xls files (Excel 97-2003) and modern xlsx files are supported.
+The file format is detected from the content of the file, not its extension.
+Under the hood legacy files are read via
+[LibXLS.jl](https://github.com/queryverse/LibXLS.jl) (a wrapper of the
+[libxls](https://github.com/libxls/libxls) C library) and modern files via
+[XLSX.jl](https://github.com/JuliaData/XLSX.jl), so the package has no Python
+or Java dependency.
 
 ## Installation
 
 Use ``Pkg.add("ExcelReaders")`` in Julia to install ExcelReaders and its dependencies.
-
-The package uses the Python xlrd library. If either Python or the xlrd package are not installed on your Mac or Windows system, the package will use the [Conda.jl](https://github.com/Luthaf/Conda.jl) package to install all necessary dependencies automatically. If you are on another system you can either install Python and xlrd yourself or instruct PyCall to use Conda.jl to manage its own python install (`ENV["PYTHON"]=""; Pkg.build("PyCall")` and restart Julia).
-
-## Alternatives
-
-The [XLSX.jl](https://github.com/felipenoris/XLSX.jl) provides excellent support for modern Excel files.
-
-The [Taro](https://github.com/aviks/Taro.jl) package also provides Excel file reading functionality. The main difference between the two packages (in terms of Excel functionality) is that ExcelReaders uses the Python package [xlrd](https://github.com/python-excel/xlrd) for its processing, whereas Taro uses the Java packages Apache [Tika](http://tika.apache.org/) and Apache [POI](http://poi.apache.org/).
 
 ## Basic usage
 
@@ -33,9 +26,11 @@ using ExcelReaders
 data = readxl("Filename.xls", "Sheet1!A1:C4")
 ````
 
-This will return an array with all the data in the cell range A1 to C4 on Sheet1 in the Excel file Filename.xls.
+This will return an array with all the data in the cell range A1 to C4 on
+Sheet1 in the Excel file Filename.xls.
 
-If you expect to read multiple ranges from the same Excel file you can get much better performance by opening the Excel file only once:
+If you expect to read multiple ranges from the same Excel file you can get much
+better performance by opening the Excel file only once:
 
 ````julia
 using ExcelReaders
@@ -64,3 +59,9 @@ This will read all content on Sheet1 in the file Filename.xls. Eventual blank ro
 - ``ncols`` accepts either ``:all`` (default) or a postiive integer. With ``:all``, all columns (except skipped ones) are read. An integer specifies the exact number of columns to be read.
 
 ``readxlsheet`` also accepts an ExcelFile (as obtained from ``openxl``) as its first argument.
+
+## Alternatives
+
+[XLSX.jl](https://github.com/JuliaData/XLSX.jl) provides excellent, more
+fully-featured support for modern Excel files (including write support), and
+is used by this package as its xlsx backend.
