@@ -1,6 +1,6 @@
 name = "ExcelReaders"
 uuid = "c04bee98-12a5-510c-87df-2a230cb6e075"
-version = "0.13.0-DEV"
+version = "1.0.0-DEV"
 
 [deps]
 DataValues = "e7dc6d0d-1eca-5fa6-8ad6-5aecde8b7ea5"
@@ -9,9 +9,9 @@ LibXLS = "221edcab-ec84-5148-84a2-7385855c517f"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
-DataValues = "0.4.4, 0.5"
+DataValues = "0.4.4, 0.5, 1"
 Dates = "1"
-LibXLS = "0.1, 0.2"
+LibXLS = "0.1, 0.2, 1"
 XLSX = "0.12"
 julia = "1.12"
 
