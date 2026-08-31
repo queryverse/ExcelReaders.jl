@@ -1,16 +1,12 @@
 module ExcelReaders
 
-using PyCall, DataValues, Dates
+using DataValues, Dates
+
+import LibXLS, XLSX
 
 export openxl, readxl, readxlsheet, ExcelErrorCell, ExcelFile, readxlnames, readxlrange
 
-const xlrd  = PyNULL()
-
 include("package_documentation.jl")
-
-function __init__()
-    copy!(xlrd, pyimport_conda("xlrd", "xlrd"))
-end
 
 """
     ExcelFile
@@ -20,8 +16,8 @@ A handle to an open Excel file.
 You can create an instance of an ``ExcelFile`` by calling ``openxl``.
 """
 mutable struct ExcelFile
-    workbook::PyObject
-    filename::AbstractString
+    workbook::Union{LibXLS.Workbook,XLSX.XLSXFile}
+    filename::String
 end
 
 """
@@ -30,19 +26,35 @@ end
 An Excel cell that has an Excel error.
 
 You cannot create ``ExcelErrorCell`` objects, they are returned if a cell in an
-Excel file has an Excel error.
+Excel file has an Excel error. ``errorcode`` is the BIFF error code.
 """
 mutable struct ExcelErrorCell
     errorcode::Int
 end
+
+const ERROR_CODE_TEXTS = Dict{Int,String}(
+    0 => "#NULL!",
+    7 => "#DIV/0!",
+    15 => "#VALUE!",
+    23 => "#REF!",
+    29 => "#NAME?",
+    36 => "#NUM!",
+    42 => "#N/A",
+    43 => "#GETTING_DATA",
+)
+
+const ERROR_TEXT_CODES = Dict{String,Int}(v => k for (k, v) in ERROR_CODE_TEXTS)
 
 function Base.show(io::IO, o::ExcelFile)
     print(io, "ExcelFile <$(o.filename)>")
 end
 
 function Base.show(io::IO, o::ExcelErrorCell)
-    print(io, xlrd.error_text_from_code[o.errorcode])
+    print(io, get(ERROR_CODE_TEXTS, o.errorcode, "#ERROR($(o.errorcode))"))
 end
+
+const OLE2_FILE_HEADER = [0xd0, 0xcf, 0x11, 0xe0] # legacy xls (BIFF)
+const ZIP_FILE_HEADER = [0x50, 0x4b, 0x03, 0x04]  # xlsx (OOXML)
 
 """
     openxl(filename)
@@ -54,6 +66,9 @@ The returned ``ExcelFile`` handle can later be passed as the first argument to
 of those functions more than once, performance will be better if you open the
 file only once with ``openxl``.
 
+Both legacy xls files and modern xlsx files are supported; the file format is
+detected from the content of the file, not its extension.
+
 # Example
 ````julia
 f = openxl("filename.xls")
@@ -61,9 +76,77 @@ data = readxl(f, "Sheet1!A1:C4")
 ````
 """
 function openxl(filename::AbstractString)
-    wb = xlrd.open_workbook(filename)
-    return ExcelFile(wb, basename(filename))
+    isfile(filename) || error("File $filename not found.")
+
+    header = open(io -> Base.read(io, 4), filename)
+
+    if header == OLE2_FILE_HEADER
+        return ExcelFile(LibXLS.openxls(filename), basename(filename))
+    elseif header == ZIP_FILE_HEADER
+        return ExcelFile(XLSX.readxlsx(filename), basename(filename))
+    else
+        error("$filename is not a valid Excel file.")
+    end
 end
+
+function Base.close(file::ExcelFile)
+    file.workbook isa LibXLS.Workbook && close(file.workbook)
+    return nothing
+end
+
+sheetnames(file::ExcelFile) = sheetnames(file.workbook)
+sheetnames(wb::LibXLS.Workbook) = LibXLS.sheetnames(wb)
+sheetnames(wb::XLSX.XLSXFile) = XLSX.sheetnames(wb)
+
+sheet_handle(file::ExcelFile, sheetname::AbstractString) = sheet_handle(file.workbook, sheetname)
+
+function sheet_handle(wb::LibXLS.Workbook, sheetname::AbstractString)
+    LibXLS.is_valid_sheetname(wb, sheetname) || error("Sheet $sheetname not found.")
+    return LibXLS.getworksheet(wb, sheetname)
+end
+
+function sheet_handle(wb::XLSX.XLSXFile, sheetname::AbstractString)
+    XLSX.hassheet(wb, sheetname) || error("Sheet $sheetname not found.")
+    return wb[sheetname]
+end
+
+sheet_dims(ws::LibXLS.Worksheet) = size(ws)
+
+function sheet_dims(ws::XLSX.Worksheet)
+    dim = XLSX.get_dimension(ws)
+    dim === nothing && return (0, 0)
+    return (dim.stop.row_number, dim.stop.column_number)
+end
+
+# Map a backend cell value into the ExcelReaders vocabulary: NA for blank
+# cells (and cells holding an empty string, as in previous versions), Float64
+# for all numbers, String, Bool, DateTime, Time and ExcelErrorCell.
+normalize_value(::Missing) = NA
+normalize_value(v::AbstractString) = isempty(v) ? NA : String(v)
+normalize_value(v::Bool) = v
+normalize_value(v::Real) = Float64(v)
+normalize_value(v::Date) = DateTime(v)
+normalize_value(v::LibXLS.CellError) = ExcelErrorCell(Int(v.code))
+normalize_value(v) = v
+
+function cell_value(ws::LibXLS.Worksheet, row::Integer, col::Integer)
+    nrows, ncols = size(ws)
+    (1 <= row <= nrows && 1 <= col <= ncols) || return NA
+    return normalize_value(ws[row, col])
+end
+
+function cell_value(ws::XLSX.Worksheet, row::Integer, col::Integer)
+    (1 <= row && 1 <= col) || return NA
+    cell = XLSX.getcell(ws, XLSX.CellRef(row, col))
+    cell isa XLSX.EmptyCell && return NA
+    if XLSX.iserror(cell)
+        errortext = XLSX.get_error_string(XLSX.getval(cell))
+        return ExcelErrorCell(get(ERROR_TEXT_CODES, errortext, -1))
+    end
+    return normalize_value(XLSX.getdata(ws, cell))
+end
+
+isblank(v) = v isa DataValue && DataValues.isna(v)
 
 function readxlsheet(filename::AbstractString, sheetindex::Int; args...)
     file = openxl(filename)
@@ -71,8 +154,7 @@ function readxlsheet(filename::AbstractString, sheetindex::Int; args...)
 end
 
 function readxlsheet(file::ExcelFile, sheetindex::Int; args...)
-    sheetnames = file.workbook.sheet_names()
-    return readxlsheet(file, sheetnames[sheetindex]; args...)
+    return readxlsheet(file, sheetnames(file)[sheetindex]; args...)
 end
 
 function readxlsheet(filename::AbstractString, sheetname::AbstractString; args...)
@@ -81,16 +163,14 @@ function readxlsheet(filename::AbstractString, sheetname::AbstractString; args..
 end
 
 function readxlsheet(file::ExcelFile, sheetname::AbstractString; args...)
-    sheet = file.workbook.sheet_by_name(sheetname)
-    startrow, startcol, endrow, endcol = convert_args_to_row_col(sheet; args...)
+    ws = sheet_handle(file, sheetname)
+    startrow, startcol, endrow, endcol = convert_args_to_row_col(ws; args...)
 
-    data = readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
-
-    return data
+    return readxl_internal(ws, startrow, startcol, endrow, endcol)
 end
 
 # Function converts "relative" range like skip rows/cols and size of range to "absolute" from row/col to row/col
-function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol} = :blanks, skipstartcols::Union{Int,Symbol} = :blanks, nrows::Union{Int,Symbol} = :all, ncols::Union{Int,Symbol} = :all)
+function convert_args_to_row_col(ws; skipstartrows::Union{Int,Symbol}=:blanks, skipstartcols::Union{Int,Symbol}=:blanks, nrows::Union{Int,Symbol}=:all, ncols::Union{Int,Symbol}=:all)
     isa(skipstartrows, Symbol) && skipstartrows != :blanks && error("Only :blank or an integer is a valid argument for skipstartrows")
     isa(skipstartrows, Int) && skipstartrows < 0 && error("Can't skip a negative number of rows")
     isa(skipstartcols, Symbol) && skipstartcols != :blanks && error("Only :blank or an integer is a valid argument for skipstartcols")
@@ -99,16 +179,13 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol} = :blank
     isa(nrows, Int) && nrows < 0 && error("nrows should be :all or positive")
     isa(ncols, Symbol) && ncols != :all && error("Only :all or an integer is a valid argument for ncols")
     isa(ncols, Int) && ncols < 0 && error("ncols should be :all or positive")
-    sheet_rows = sheet.nrows
-    sheet_cols = sheet.ncols
 
-    cell_value = sheet.cell_value
+    sheet_rows, sheet_cols = sheet_dims(ws)
 
     if skipstartrows == :blanks
         startrow = -1
         for cur_row in 1:sheet_rows, cur_col in 1:sheet_cols
-            cellval = cell_value(cur_row - 1, cur_col - 1)
-            if cellval != ""
+            if !isblank(cell_value(ws, cur_row, cur_col))
                 startrow = cur_row
                 break
             end
@@ -125,8 +202,7 @@ function convert_args_to_row_col(sheet;skipstartrows::Union{Int,Symbol} = :blank
     if skipstartcols == :blanks
         startcol = -1
         for cur_col in 1:sheet_cols, cur_row in 1:sheet_rows
-            cellval = cell_value(cur_row - 1, cur_col - 1)
-            if cellval != ""
+            if !isblank(cell_value(ws, cur_row, cur_col))
                 startcol = cur_col
                 break
             end
@@ -167,18 +243,18 @@ end
 function convert_ref_to_sheet_row_col(range::AbstractString)
     r = r"('?[^']+'?|[^!]+)!([A-Za-z]*)(\d*)(:([A-Za-z]*)(\d*))?"
     m = match(r, range)
-    m == nothing && error("Invalid Excel range specified.")
+    m === nothing && error("Invalid Excel range specified.")
     sheetname = String(m.captures[1])
     startrow = parse(Int, m.captures[3])
     startcol = colnum(m.captures[2])
-    if m.captures[4] == nothing
+    if m.captures[4] === nothing
         endrow = startrow
         endcol = startcol
     else
         endrow = parse(Int, m.captures[6])
         endcol = colnum(m.captures[5])
     end
-    if (startrow > endrow ) || (startcol > endcol)
+    if (startrow > endrow) || (startcol > endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
     return sheetname, startrow, startcol, endrow, endcol
@@ -192,49 +268,23 @@ end
 
 function readxl(file::ExcelFile, range::AbstractString)
     sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
-    readxl_internal(file, sheetname, startrow, startcol, endrow, endcol)
-end
-
-function get_cell_value(ws, row, col, wb)
-    cellval = ws.cell_value(row - 1, col - 1)
-    if cellval == ""
-        return NA
-    else
-        celltype = ws.cell_type(row - 1, col - 1)
-        if celltype == xlrd.XL_CELL_TEXT
-            return convert(String, cellval)
-        elseif celltype == xlrd.XL_CELL_NUMBER
-            return convert(Float64, cellval)
-        elseif celltype == xlrd.XL_CELL_DATE
-            date_year, date_month, date_day, date_hour, date_minute, date_sec = xlrd.xldate_as_tuple(cellval, wb.datemode)
-            if date_month == 0
-                return Time(date_hour, date_minute, date_sec)
-            else
-                return DateTime(date_year, date_month, date_day, date_hour, date_minute, date_sec)
-            end
-        elseif celltype == xlrd.XL_CELL_BOOLEAN
-            return convert(Bool, cellval)
-        elseif celltype == xlrd.XL_CELL_ERROR
-            return ExcelErrorCell(cellval)
-        else
-            error("Unknown cell type")
-        end
-    end
+    ws = sheet_handle(file, sheetname)
+    readxl_internal(ws, startrow, startcol, endrow, endcol)
 end
 
 function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::Integer, startcol::Integer, endrow::Integer, endcol::Integer)
-    wb = file.workbook
-    ws = wb.sheet_by_name(sheetname)
+    return readxl_internal(sheet_handle(file, sheetname), startrow, startcol, endrow, endcol)
+end
 
+function readxl_internal(ws, startrow::Integer, startcol::Integer, endrow::Integer, endcol::Integer)
     if startrow == endrow && startcol == endcol
-        return get_cell_value(ws, startrow, startcol, wb)
+        return cell_value(ws, startrow, startcol)
     else
-
         data = Array{Any}(undef, endrow - startrow + 1, endcol - startcol + 1)
 
         for row in startrow:endrow
             for col in startcol:endcol
-                data[row - startrow + 1, col - startcol + 1] = get_cell_value(ws, row, col, wb)
+                data[row - startrow + 1, col - startcol + 1] = cell_value(ws, row, col)
             end
         end
 
@@ -243,20 +293,14 @@ function readxl_internal(file::ExcelFile, sheetname::AbstractString, startrow::I
 end
 
 function readxlnames(f::ExcelFile)
-    return [lowercase(i.name) for i in f.workbook.name_obj_list if i.hidden == 0]
+    f.workbook isa XLSX.XLSXFile || error("Defined names are not supported for legacy xls files.")
+    return sort!(collect(keys(f.workbook.workbook.workbook_names)))
 end
 
 function readxlrange(f::ExcelFile, range::AbstractString)
-    name = f.workbook.name_map[lowercase(range)]
-    if length(name) != 1
-        error("More than one reference per name, this case is not yet handled by ExcelReaders.")
-    end
-
-    formula_text = name[1].formula_text
-    formula_text = replace(formula_text, "\$" => "")
-    formula_text = replace(formula_text, "'" => "")
-
-    return readxl(f, formula_text)
+    f.workbook isa XLSX.XLSXFile || error("Defined names are not supported for legacy xls files.")
+    data = XLSX.getdata(f.workbook, range)
+    return data isa AbstractArray ? map(normalize_value, data) : normalize_value(data)
 end
 
 end # module
