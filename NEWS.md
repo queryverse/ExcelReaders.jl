@@ -1,3 +1,10 @@
+# ExcelReaders.jl v1.1.0 Release Notes
+* `readxl` supports open-ended ranges: the row number may be omitted on
+  either end, so `"Sheet1!A3:A"` reads from row 3 to the last used row and
+  `"Sheet1!A:A"` reads the whole column
+* Ranges that extend beyond the used part of a sheet return NA-filled cells
+  for both backends (this already worked since v1.0.0; now covered by tests)
+
 # ExcelReaders.jl v1.0.0 Release Notes
 * Drop the PyCall/xlrd backend: legacy xls files are now read natively via
   LibXLS.jl and modern xlsx files via XLSX.jl, with the file format detected

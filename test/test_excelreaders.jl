@@ -234,3 +234,49 @@ end
     @test_throws ErrorException readxlnames(xls)
     @test_throws ErrorException readxlrange(xls, "block")
 end
+
+@testitem "Open-ended ranges" begin
+    using Dates, DataValues
+
+    for name in ["TestData.xls", "TestData.xlsx"]
+        f = openxl(normpath(@__DIR__, name))
+
+        data = readxl(f, "Sheet1!C4:C")
+        @test size(data, 2) == 1
+        @test data[1, 1] == 1.0
+        @test data[2, 1] == 1.5
+        @test data[3, 1] == 2.0
+
+        # a fully open range spans all rows of the sheet
+        data2 = readxl(f, "Sheet1!C:C")
+        @test size(data2, 1) == size(data, 1) + 3
+        @test DataValues.isna(data2[1, 1])
+        @test data2[4, 1] == 1.0
+
+        data3 = readxl(f, "Sheet1!C3:D")
+        @test data3[1, 1] == "Some Float64s"
+        @test data3[2, 2] == "A"
+
+        @test_throws ErrorException readxl(f, "Sheet1!C4:G3")
+        @test_throws ErrorException readxl(f, "Sheet1!:C")
+        @test_throws ErrorException readxl(f, "Sheet1!C4:")
+    end
+end
+
+@testitem "Ranges beyond the data" begin
+    using DataValues
+
+    # Ranges that extend beyond the used part of the sheet come back as
+    # NA-filled cells rather than erroring (issue #49).
+    for name in ["TestData.xls", "TestData.xlsx"]
+        f = openxl(normpath(@__DIR__, name))
+
+        data = readxl(f, "Sheet1!A1:AB60")
+        @test size(data) == (60, 28)
+        @test data[4, 3] == 1.0
+        @test DataValues.isna(data[1, 1])
+        @test DataValues.isna(data[60, 28])
+
+        @test DataValues.isna(readxl(f, "Sheet1!AB60"))
+    end
+end

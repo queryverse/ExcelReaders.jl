@@ -260,16 +260,24 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
     m = match(r, range)
     m === nothing && error("Invalid Excel range specified.")
     sheetname = String(m.captures[1])
-    startrow = parse(Int, m.captures[3])
-    startcol = colnum(m.captures[2])
     if m.captures[4] === nothing
+        # a single cell reference needs both a column and a row
+        (isempty(m.captures[2]) || isempty(m.captures[3])) && error("Invalid Excel range specified.")
+        startrow = parse(Int, m.captures[3])
+        startcol = colnum(m.captures[2])
         endrow = startrow
         endcol = startcol
     else
-        endrow = parse(Int, m.captures[6])
+        (isempty(m.captures[2]) || isempty(m.captures[5])) && error("Invalid Excel range specified.")
+        startcol = colnum(m.captures[2])
         endcol = colnum(m.captures[5])
+        # Row numbers may be omitted on either end ("A3:A", "A:A"): a missing
+        # start row means the first row, and a missing end row is returned as
+        # 0 and resolved to the last used row of the sheet by the caller.
+        startrow = isempty(m.captures[3]) ? 1 : parse(Int, m.captures[3])
+        endrow = isempty(m.captures[6]) ? 0 : parse(Int, m.captures[6])
     end
-    if (startrow > endrow) || (startcol > endcol)
+    if (endrow != 0 && startrow > endrow) || (startcol > endcol)
         error("Please provide rectangular region from top left to bottom right corner")
     end
     return sheetname, startrow, startcol, endrow, endcol
@@ -281,7 +289,9 @@ end
 Read the given range from an Excel file and return its content as a matrix
 (or a single value for a single-cell range). `file` is either a filename or
 an `ExcelFile` from [`openxl`](@ref); `range` is a full Excel range
-specification such as `"Sheet1!A1:C4"`.
+specification such as `"Sheet1!A1:C4"`. The row number may be omitted on
+either end of the range: `"Sheet1!A3:A"` reads column A from row 3 to the
+last used row of the sheet, and `"Sheet1!A:A"` reads the whole column.
 """
 function readxl(filename::AbstractString, range::AbstractString)
     excelfile = openxl(filename)
@@ -292,6 +302,10 @@ end
 function readxl(file::ExcelFile, range::AbstractString)
     sheetname, startrow, startcol, endrow, endcol = convert_ref_to_sheet_row_col(range)
     ws = sheet_handle(file, sheetname)
+    if endrow == 0
+        # open-ended range like "A3:A": read to the last used row
+        endrow = max(sheet_dims(ws)[1], startrow)
+    end
     readxl_internal(ws, startrow, startcol, endrow, endcol)
 end
 
