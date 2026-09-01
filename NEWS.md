@@ -1,3 +1,14 @@
+# ExcelReaders.jl v1.0.0 Release Notes
+* Drop the PyCall/xlrd backend: legacy xls files are now read natively via
+  LibXLS.jl and modern xlsx files via XLSX.jl, with the file format detected
+  from the content of the file
+* Restore support for modern xlsx files
+* Error cells are returned as `ExcelErrorCell` for both file formats
+* `readxlnames` and `readxlrange` work for xlsx files (they error for xls
+  files, where the underlying library does not expose defined names)
+* `close` releases the resources of an `ExcelFile`
+* Minimum supported Julia version is 1.10
+
 # ExcelReaders.jl v0.12.0 Release Notes
 * Drop julia 0.7 support
 * Migrate to Project.toml

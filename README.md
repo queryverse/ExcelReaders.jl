@@ -60,6 +60,35 @@ This will read all content on Sheet1 in the file Filename.xls. Eventual blank ro
 
 ``readxlsheet`` also accepts an ExcelFile (as obtained from ``openxl``) as its first argument.
 
+## Defined names
+
+For xlsx files, workbook-level defined names can be listed and read:
+
+````julia
+f = openxl("Filename.xlsx")
+
+readxlnames(f)             # all defined names
+readxlrange(f, "MyRange")  # content of the range a name refers to
+````
+
+Defined names are not available for legacy xls files, because the underlying
+C library does not expose them.
+
+## Closing a file
+
+``close(f)`` releases the resources of an ``ExcelFile`` obtained from
+``openxl`` (for xlsx files this is a no-op, for xls files it closes the
+underlying C library handle; files also close themselves when garbage
+collected).
+
+## Limitations
+
+* Reading only — for writing xlsx files use
+  [XLSX.jl](https://github.com/JuliaData/XLSX.jl) or
+  [ExcelFiles.jl](https://github.com/queryverse/ExcelFiles.jl).
+* Cell formulas are not exposed, only their cached results.
+* Reading from a byte buffer or ``IO`` is not supported, only from files.
+
 ## Alternatives
 
 [XLSX.jl](https://github.com/JuliaData/XLSX.jl) provides excellent, more

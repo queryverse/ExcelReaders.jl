@@ -190,4 +190,47 @@ end
     for sheet in ["Second Sheet", 2]
         compare_cells(readxlsheet(xls, sheet), readxlsheet(xlsx, sheet))
     end
+
+    # the internal entry point ExcelFiles relies on
+    @test ExcelReaders.readxl_internal(xls, "Sheet1", 4, 3, 4, 3) == 1.0
+    @test ExcelReaders.readxl_internal(xlsx, "Sheet1", 4, 3, 4, 3) == 1.0
+
+    # close works for both backends (a no-op for xlsx)
+    close(xls)
+    close(xlsx)
+    @test_throws ErrorException readxl(xls, "Sheet1!C4")
+end
+
+@testitem "Defined names" begin
+    using Dates, DataValues
+    import ExcelReaders.XLSX
+
+    filename = joinpath(mktempdir(), "named.xlsx")
+    XLSX.openxlsx(filename, mode="w") do xf
+        sh = xf[1]
+        XLSX.rename!(sh, "Sheet1")
+        sh["B2"] = 1.0
+        sh["C2"] = 2.0
+        sh["B3"] = 3.0
+        sh["C3"] = 4.0
+        sh["E1"] = "hello"
+        XLSX.addDefinedName(xf, "block", "Sheet1!B2:C3")
+        XLSX.addDefinedName(xf, "single", "Sheet1!E1")
+    end
+
+    f = openxl(filename)
+    @test readxlnames(f) == ["block", "single"]
+
+    data = readxlrange(f, "block")
+    @test size(data) == (2, 2)
+    @test data[1, 1] == 1.0
+    @test data[2, 2] == 4.0
+
+    @test readxlrange(f, "single") == "hello"
+
+    # Defined names are not available for legacy xls files, because the
+    # underlying C library does not expose them.
+    xls = openxl(normpath(@__DIR__, "TestData.xls"))
+    @test_throws ErrorException readxlnames(xls)
+    @test_throws ErrorException readxlrange(xls, "block")
 end
