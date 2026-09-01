@@ -148,6 +148,21 @@ end
 
 isblank(v) = v isa DataValue && DataValues.isna(v)
 
+"""
+    readxlsheet(file, sheet; skipstartrows=:blanks, skipstartcols=:blanks, nrows=:all, ncols=:all)
+
+Read a whole sheet from an Excel file and return its content as a matrix.
+`file` is either a filename or an `ExcelFile` from [`openxl`](@ref); `sheet`
+is a sheet name or (1-based) index.
+
+Blank rows and columns at the top and left are skipped by default. The
+keyword arguments control the range that is read:
+
+- `skipstartrows`/`skipstartcols`: `:blanks` (default) skips empty initial
+  rows/columns; an integer skips exactly that many.
+- `nrows`/`ncols`: `:all` (default) reads everything after the skipped
+  rows/columns; an integer reads exactly that many.
+"""
 function readxlsheet(filename::AbstractString, sheetindex::Int; args...)
     file = openxl(filename)
     return readxlsheet(file, sheetindex; args...)
@@ -260,6 +275,14 @@ function convert_ref_to_sheet_row_col(range::AbstractString)
     return sheetname, startrow, startcol, endrow, endcol
 end
 
+"""
+    readxl(file, range)
+
+Read the given range from an Excel file and return its content as a matrix
+(or a single value for a single-cell range). `file` is either a filename or
+an `ExcelFile` from [`openxl`](@ref); `range` is a full Excel range
+specification such as `"Sheet1!A1:C4"`.
+"""
 function readxl(filename::AbstractString, range::AbstractString)
     excelfile = openxl(filename)
 
@@ -292,11 +315,25 @@ function readxl_internal(ws, startrow::Integer, startcol::Integer, endrow::Integ
     end
 end
 
+"""
+    readxlnames(f::ExcelFile)
+
+Return the workbook-level defined names in the Excel file, sorted
+alphabetically. Only supported for xlsx files; for legacy xls files an error
+is thrown, because the underlying C library does not expose defined names.
+"""
 function readxlnames(f::ExcelFile)
     f.workbook isa XLSX.XLSXFile || error("Defined names are not supported for legacy xls files.")
     return sort!(collect(keys(f.workbook.workbook.workbook_names)))
 end
 
+"""
+    readxlrange(f::ExcelFile, name)
+
+Read the range that the defined name `name` refers to and return its content
+(a matrix, or a single value for a single-cell name). Only supported for
+xlsx files; for legacy xls files an error is thrown.
+"""
 function readxlrange(f::ExcelFile, range::AbstractString)
     f.workbook isa XLSX.XLSXFile || error("Defined names are not supported for legacy xls files.")
     data = XLSX.getdata(f.workbook, range)
