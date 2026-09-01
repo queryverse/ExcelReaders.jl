@@ -1,6 +1,6 @@
 name = "ExcelReaders"
 uuid = "c04bee98-12a5-510c-87df-2a230cb6e075"
-version = "1.1.0"
+version = "1.1.1-DEV"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
